@@ -22,7 +22,6 @@ export type Project = {
 
 type ProjectDetailPageProps = {
   project: Project;
-  currentUserUid: string;
   onBack: () => void;
 };
 
@@ -46,7 +45,6 @@ const tabs = [
 
 function ProjectDetailPage({
   project,
-  currentUserUid,
   onBack,
 }: ProjectDetailPageProps) {
   const [activeTab, setActiveTab] = useState("Overview");
@@ -111,15 +109,9 @@ function ProjectDetailPage({
     </div>
   </section>
 ) : activeTab === "Workstreams" ? (
-  <WorkstreamsTab
-    projectId={project.id}
-    currentUserUid={currentUserUid}
-  />
+  <WorkstreamsTab projectId={project.id} />
 ) : activeTab === "Tasks" ? (
-  <TasksTab
-    projectId={project.id}
-    currentUserUid={currentUserUid}
-  />
+  <TasksTab projectId={project.id} />
 ) : (
   <section className="panel">
     <div className="empty-state large">

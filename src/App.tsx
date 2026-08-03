@@ -307,7 +307,7 @@ const loading =
         {activeMenu === "Dashboard" ? (
           <Dashboard profile={profile} />
         ) : activeMenu === "Projects" ? (
-          <ProjectsPage currentUserUid={user.uid} />
+          <ProjectsPage />
         ) : activeMenu === "Interns" ? (
           <InternsPage />
         ) : (

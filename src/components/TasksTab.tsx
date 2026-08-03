@@ -5,57 +5,22 @@ import {
   type ReactNode,
 } from "react";
 import {
-  addDoc,
-  collection,
-  doc,
-  onSnapshot,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
-import { db } from "../firebase";
-
-type TaskStatus =
-  | "TODO"
-  | "IN_PROGRESS"
-  | "REVIEW"
-  | "DONE"
-  | "HOLD";
-
-type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
-
-type Workstream = {
-  id: string;
-  name: string;
-};
-
-type Intern = {
-  id: string;
-  name: string;
-  userUid: string | null;
-  status: "PLANNED" | "ACTIVE" | "COMPLETED";
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description: string;
-
-  workstreamId: string | null;
-  parentTaskId: string | null;
-
-  assigneeInternIds: string[];
-  assigneeUids: string[];
-
-  status: TaskStatus;
-  priority: TaskPriority;
-
-  startDate: string | null;
-  dueDate: string | null;
-};
+  createTask,
+  getTasks,
+  updateTask,
+} from "../services/taskService";
+import { getWorkstreams } from "../services/workstreamService";
+import { getInterns } from "../services/internService";
+import type {
+  Intern,
+  Task,
+  TaskPriority,
+  TaskStatus,
+  Workstream,
+} from "../types/domain";
 
 type TasksTabProps = {
   projectId: string;
-  currentUserUid: string;
 };
 
 const statusLabels: Record<TaskStatus, string> = {
@@ -72,12 +37,11 @@ const priorityLabels: Record<TaskPriority, string> = {
   HIGH: "높음",
 };
 
-function TasksTab({
-  projectId,
-  currentUserUid,
-}: TasksTabProps) {
+function TasksTab({ projectId }: TasksTabProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [workstreams, setWorkstreams] = useState<Workstream[]>([]);
+  const [workstreams, setWorkstreams] = useState<
+    Workstream[]
+  >([]);
   const [interns, setInterns] = useState<Intern[]>([]);
 
   const [showForm, setShowForm] = useState(false);
@@ -87,68 +51,73 @@ function TasksTab({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
-  const [workstreamId, setWorkstreamId] = useState("");
-  const [parentTaskId, setParentTaskId] = useState("");
-  const [assigneeInternId, setAssigneeInternId] = useState("");
+  const [workstreamId, setWorkstreamId] =
+    useState("");
+  const [parentTaskId, setParentTaskId] =
+    useState("");
+  const [assigneeInternId, setAssigneeInternId] =
+    useState("");
 
-  const [status, setStatus] = useState<TaskStatus>("TODO");
+  const [status, setStatus] =
+    useState<TaskStatus>("TODO");
+
   const [priority, setPriority] =
     useState<TaskPriority>("MEDIUM");
 
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
 
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
   const [collapsedTaskIds, setCollapsedTaskIds] =
-  useState<Set<string>>(new Set());
+    useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const unsubscribeTasks = onSnapshot(
-      collection(db, "projects", projectId, "tasks"),
-      (snapshot) => {
-        const list = snapshot.docs.map((document) => ({
-          id: document.id,
-          ...document.data(),
-        })) as Task[];
+    let isMounted = true;
 
-        setTasks(list);
-      },
-      (error) => {
+    const loadTaskData = async () => {
+      try {
+        setLoading(true);
+        setMessage("");
+
+        const [
+          taskList,
+          workstreamList,
+          internList,
+        ] = await Promise.all([
+          getTasks(projectId),
+          getWorkstreams(projectId),
+          getInterns(),
+        ]);
+
+        if (isMounted) {
+          setTasks(taskList);
+          setWorkstreams(workstreamList);
+          setInterns(internList);
+        }
+      } catch (error) {
         console.error(error);
-        setMessage("Task 목록을 불러오지 못했습니다.");
+
+        if (isMounted) {
+          setMessage(
+            error instanceof Error
+              ? error.message
+              : "Task 데이터를 불러오지 못했습니다."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    );
+    };
 
-    const unsubscribeWorkstreams = onSnapshot(
-      collection(db, "projects", projectId, "workstreams"),
-      (snapshot) => {
-        const list = snapshot.docs.map((document) => ({
-          id: document.id,
-          ...document.data(),
-        })) as Workstream[];
-
-        setWorkstreams(list);
-      }
-    );
-
-    const unsubscribeInterns = onSnapshot(
-      collection(db, "interns"),
-      (snapshot) => {
-        const list = snapshot.docs.map((document) => ({
-          id: document.id,
-          ...document.data(),
-        })) as Intern[];
-
-        setInterns(list);
-      }
-    );
+    loadTaskData();
 
     return () => {
-      unsubscribeTasks();
-      unsubscribeWorkstreams();
-      unsubscribeInterns();
+      isMounted = false;
     };
   }, [projectId]);
 
@@ -182,11 +151,11 @@ function TasksTab({
 
     setTitle(task.title);
     setDescription(task.description || "");
-    setWorkstreamId(task.workstreamId || "");
+    setWorkstreamId(task.workstreamId);
     setParentTaskId(task.parentTaskId || "");
 
     setAssigneeInternId(
-      task.assigneeInternIds?.[0] || ""
+      task.assigneeInternIds[0] || ""
     );
 
     setStatus(task.status);
@@ -204,6 +173,56 @@ function TasksTab({
     });
   };
 
+  const getDescendantTaskIds = (
+    taskId: string
+  ): Set<string> => {
+    const descendants = new Set<string>();
+
+    const collectChildren = (parentId: string) => {
+      const children = tasks.filter(
+        (task) => task.parentTaskId === parentId
+      );
+
+      children.forEach((child) => {
+        descendants.add(child.id);
+        collectChildren(child.id);
+      });
+    };
+
+    collectChildren(taskId);
+
+    return descendants;
+  };
+
+  const unavailableParentIds = editingTaskId
+    ? getDescendantTaskIds(editingTaskId)
+    : new Set<string>();
+
+  const parentTaskOptions = tasks.filter(
+    (task) =>
+      task.workstreamId === workstreamId &&
+      task.id !== editingTaskId &&
+      !unavailableParentIds.has(task.id)
+  );
+
+  const handleWorkstreamChange = (
+    nextWorkstreamId: string
+  ) => {
+    setWorkstreamId(nextWorkstreamId);
+
+    const selectedParent = tasks.find(
+      (task) => task.id === parentTaskId
+    );
+
+    if (
+      selectedParent &&
+      selectedParent.workstreamId !==
+        nextWorkstreamId
+    ) {
+      setParentTaskId("");
+    }
+  };
+
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
   ) => {
@@ -219,69 +238,91 @@ function TasksTab({
       return;
     }
 
-    let assigneeInternIds: string[] = [];
-    let assigneeUids: string[] = [];
-
-    if (assigneeInternId) {
-      const selectedIntern = interns.find(
-        (intern) => intern.id === assigneeInternId
-      );
-
-      assigneeInternIds = [assigneeInternId];
-
-      if (selectedIntern?.userUid) {
-        assigneeUids = [selectedIntern.userUid];
-      }
-    }
-
-    const taskData = {
-      title: title.trim(),
-      description: description.trim(),
-
-      workstreamId,
-      parentTaskId: parentTaskId || null,
-
-      assigneeInternIds,
-      assigneeUids,
-
-      status,
-      priority,
-
-      startDate: startDate || null,
-      dueDate: dueDate || null,
-
-      updatedAt: serverTimestamp(),
-      updatedBy: currentUserUid,
-    };
-
     try {
       setSaving(true);
       setMessage("");
 
       if (editingTaskId) {
-        const taskRef = doc(
-          db,
-          "projects",
-          projectId,
-          "tasks",
-          editingTaskId
+        const existingTask = tasks.find(
+          (task) => task.id === editingTaskId
         );
 
-        await updateDoc(taskRef, taskData);
+        if (!existingTask) {
+          setMessage(
+            "수정할 Task를 찾을 수 없습니다."
+          );
+          return;
+        }
+
+        const updatedTask = await updateTask({
+          taskId: editingTaskId,
+          projectId,
+
+          title,
+          description,
+
+          workstreamId,
+          parentTaskId: parentTaskId || null,
+
+          assigneeInternId:
+            assigneeInternId || null,
+
+          status,
+          priority,
+
+          startDate: startDate || null,
+          dueDate: dueDate || null,
+
+          order: existingTask.order,
+        });
+
+        setTasks((previous) =>
+          previous.map((task) =>
+            task.id === updatedTask.id
+              ? updatedTask
+              : task
+          )
+        );
 
         setMessage("Task가 수정되었습니다.");
       } else {
-        await addDoc(
-          collection(db, "projects", projectId, "tasks"),
-          {
-            ...taskData,
+        const nextOrder =
+          tasks
+            .filter(
+              (task) =>
+                task.workstreamId === workstreamId
+            )
+            .reduce(
+              (maximum, task) =>
+                Math.max(maximum, task.order),
+              0
+            ) + 1;
 
-            createdAt: serverTimestamp(),
-            createdBy: currentUserUid,
+        const createdTask = await createTask({
+          projectId,
 
-            schemaVersion: 1,
-          }
-        );
+          title,
+          description,
+
+          workstreamId,
+          parentTaskId: parentTaskId || null,
+
+          assigneeInternId:
+            assigneeInternId || null,
+
+          status,
+          priority,
+
+          startDate: startDate || null,
+          dueDate: dueDate || null,
+
+          order: nextOrder,
+        });
+
+        setTasks((previous) => [
+          ...previous,
+          createdTask,
+        ]);
 
         setMessage("Task가 생성되었습니다.");
       }
@@ -292,16 +333,20 @@ function TasksTab({
       console.error(error);
 
       setMessage(
-        editingTaskId
-          ? "Task 수정에 실패했습니다."
-          : "Task 생성에 실패했습니다."
+        error instanceof Error
+          ? error.message
+          : editingTaskId
+            ? "Task 수정에 실패했습니다."
+            : "Task 생성에 실패했습니다."
       );
     } finally {
       setSaving(false);
     }
   };
 
-  const getWorkstreamName = (id: string | null) => {
+  const getWorkstreamName = (
+    id: string | null
+  ) => {
     if (!id) return "-";
 
     return (
@@ -311,166 +356,172 @@ function TasksTab({
     );
   };
 
-  const getInternNames = (internIds: string[]) => {
-    if (!internIds || internIds.length === 0) {
+  const getInternNames = (
+    internIds: string[]
+  ) => {
+    if (internIds.length === 0) {
       return "담당자 없음";
     }
 
     return internIds
       .map(
         (id) =>
-          interns.find((intern) => intern.id === id)?.name ||
-          "알 수 없음"
+          interns.find(
+            (intern) => intern.id === id
+          )?.name || "알 수 없음"
       )
       .join(", ");
   };
 
-  const getChildTasks = (parentId: string) => {
-  return tasks.filter(
-    (task) => task.parentTaskId === parentId
-  );
-};
+  const getChildTasks = (
+    parentId: string
+  ) => {
+    return tasks.filter(
+      (task) => task.parentTaskId === parentId
+    );
+  };
 
-const toggleTask = (taskId: string) => {
-  setCollapsedTaskIds((previous) => {
-    const next = new Set(previous);
+  const toggleTask = (taskId: string) => {
+    setCollapsedTaskIds((previous) => {
+      const next = new Set(previous);
 
-    if (next.has(taskId)) {
-      next.delete(taskId);
-    } else {
-      next.add(taskId);
-    }
-
-    return next;
-  });
-};
-
-const renderTaskNode = (
-  task: Task,
-  depth = 0
-): ReactNode => {
-  const children = getChildTasks(task.id);
-
-  const isCollapsed =
-    collapsedTaskIds.has(task.id);
-
-  const completedChildren = children.filter(
-    (child) => child.status === "DONE"
-  ).length;
-
-  return (
-    <div
-      className={
-        depth === 0
-          ? "task-tree-node root-task"
-          : "task-tree-node child-task"
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
       }
-      key={task.id}
-    >
-      <article className="task-card">
-        <div className="task-main">
-          <div className="task-top-row">
-            <div className="task-title-area">
-              {children.length > 0 ? (
+
+      return next;
+    });
+  };
+
+  const renderTaskNode = (
+    task: Task,
+    depth = 0
+  ): ReactNode => {
+    const children = getChildTasks(task.id);
+    const isCollapsed =
+      collapsedTaskIds.has(task.id);
+
+    const completedChildren = children.filter(
+      (child) => child.status === "DONE"
+    ).length;
+
+    return (
+      <div
+        className={
+          depth === 0
+            ? "task-tree-node root-task"
+            : "task-tree-node child-task"
+        }
+        key={task.id}
+      >
+        <article className="task-card">
+          <div className="task-main">
+            <div className="task-top-row">
+              <div className="task-title-area">
+                {children.length > 0 ? (
+                  <button
+                    type="button"
+                    className="task-tree-toggle"
+                    onClick={() =>
+                      toggleTask(task.id)
+                    }
+                    title={
+                      isCollapsed
+                        ? "하위 Task 펼치기"
+                        : "하위 Task 접기"
+                    }
+                  >
+                    {isCollapsed ? "▶" : "▼"}
+                  </button>
+                ) : (
+                  <span className="task-tree-spacer">
+                    •
+                  </span>
+                )}
+
+                <div>
+                  <h3>{task.title}</h3>
+
+                  {children.length > 0 && (
+                    <p className="child-progress">
+                      하위 업무 {completedChildren} /{" "}
+                      {children.length} 완료
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="task-actions">
+                <span className="status-badge">
+                  {statusLabels[task.status]}
+                </span>
+
                 <button
                   type="button"
-                  className="task-tree-toggle"
-                  onClick={() => toggleTask(task.id)}
-                  title={
-                    isCollapsed
-                      ? "하위 Task 펼치기"
-                      : "하위 Task 접기"
+                  className="edit-button"
+                  onClick={() =>
+                    handleEditTask(task)
                   }
                 >
-                  {isCollapsed ? "▶" : "▼"}
+                  수정
                 </button>
-              ) : (
-                <span className="task-tree-spacer">
-                  •
-                </span>
-              )}
-
-              <div>
-                <h3>{task.title}</h3>
-
-                {children.length > 0 && (
-                  <p className="child-progress">
-                    하위 업무 {completedChildren} /{" "}
-                    {children.length} 완료
-                  </p>
-                )}
               </div>
             </div>
 
-            <div className="task-actions">
-              <span className="status-badge">
-                {statusLabels[task.status]}
+            <p className="task-description">
+              {task.description ||
+                "등록된 설명이 없습니다."}
+            </p>
+
+            <div className="task-meta">
+              <span>
+                Workstream
+                <strong>
+                  {getWorkstreamName(
+                    task.workstreamId
+                  )}
+                </strong>
               </span>
 
-              <button
-                type="button"
-                className="edit-button"
-                onClick={() =>
-                  handleEditTask(task)
-                }
-              >
-                수정
-              </button>
+              <span>
+                담당
+                <strong>
+                  {getInternNames(
+                    task.assigneeInternIds
+                  )}
+                </strong>
+              </span>
+
+              <span>
+                우선순위
+                <strong>
+                  {priorityLabels[task.priority]}
+                </strong>
+              </span>
+
+              <span>
+                마감
+                <strong>
+                  {task.dueDate || "-"}
+                </strong>
+              </span>
             </div>
           </div>
+        </article>
 
-          <p className="task-description">
-            {task.description ||
-              "등록된 설명이 없습니다."}
-          </p>
-
-          <div className="task-meta">
-            <span>
-              Workstream
-              <strong>
-                {getWorkstreamName(
-                  task.workstreamId
-                )}
-              </strong>
-            </span>
-
-            <span>
-              담당
-              <strong>
-                {getInternNames(
-                  task.assigneeInternIds || []
-                )}
-              </strong>
-            </span>
-
-            <span>
-              우선순위
-              <strong>
-                {priorityLabels[task.priority]}
-              </strong>
-            </span>
-
-            <span>
-              마감
-              <strong>
-                {task.dueDate || "-"}
-              </strong>
-            </span>
-          </div>
-        </div>
-      </article>
-
-      {children.length > 0 &&
-        !isCollapsed && (
-          <div className="task-tree-children">
-            {children.map((child) =>
-              renderTaskNode(child, depth + 1)
-            )}
-          </div>
-        )}
-    </div>
-  );
-};
+        {children.length > 0 &&
+          !isCollapsed && (
+            <div className="task-tree-children">
+              {children.map((child) =>
+                renderTaskNode(child, depth + 1)
+              )}
+            </div>
+          )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -478,8 +529,8 @@ const renderTaskNode = (
         <div>
           <h2>Tasks</h2>
           <p>
-            프로젝트의 실제 수행 업무를 등록하고 진행 상태를
-            관리합니다.
+            프로젝트의 실제 수행 업무를 등록하고 진행
+            상태를 관리합니다.
           </p>
         </div>
 
@@ -494,14 +545,18 @@ const renderTaskNode = (
       </div>
 
       {message && (
-        <div className="notice-message">{message}</div>
+        <div className="notice-message">
+          {message}
+        </div>
       )}
 
       {showForm && (
         <section className="project-form-card">
           <div className="task-form-header">
             <h2>
-              {editingTaskId ? "Task 수정" : "새 Task"}
+              {editingTaskId
+                ? "Task 수정"
+                : "새 Task"}
             </h2>
 
             <button
@@ -544,7 +599,9 @@ const renderTaskNode = (
                 <select
                   value={workstreamId}
                   onChange={(event) =>
-                    setWorkstreamId(event.target.value)
+                    handleWorkstreamChange(
+                      event.target.value
+                    )
                   }
                 >
                   <option value="">
@@ -572,7 +629,9 @@ const renderTaskNode = (
                     )
                   }
                 >
-                  <option value="">담당자 없음</option>
+                  <option value="">
+                    담당자 없음
+                  </option>
 
                   {interns.map((intern) => (
                     <option
@@ -596,17 +655,26 @@ const renderTaskNode = (
                   value={status}
                   onChange={(event) =>
                     setStatus(
-                      event.target.value as TaskStatus
+                      event.target
+                        .value as TaskStatus
                     )
                   }
                 >
-                  <option value="TODO">할 일</option>
+                  <option value="TODO">
+                    할 일
+                  </option>
                   <option value="IN_PROGRESS">
                     진행 중
                   </option>
-                  <option value="REVIEW">검토</option>
-                  <option value="DONE">완료</option>
-                  <option value="HOLD">보류</option>
+                  <option value="REVIEW">
+                    검토
+                  </option>
+                  <option value="DONE">
+                    완료
+                  </option>
+                  <option value="HOLD">
+                    보류
+                  </option>
                 </select>
               </label>
 
@@ -616,13 +684,20 @@ const renderTaskNode = (
                   value={priority}
                   onChange={(event) =>
                     setPriority(
-                      event.target.value as TaskPriority
+                      event.target
+                        .value as TaskPriority
                     )
                   }
                 >
-                  <option value="LOW">낮음</option>
-                  <option value="MEDIUM">보통</option>
-                  <option value="HIGH">높음</option>
+                  <option value="LOW">
+                    낮음
+                  </option>
+                  <option value="MEDIUM">
+                    보통
+                  </option>
+                  <option value="HIGH">
+                    높음
+                  </option>
                 </select>
               </label>
             </div>
@@ -632,25 +707,24 @@ const renderTaskNode = (
               <select
                 value={parentTaskId}
                 onChange={(event) =>
-                  setParentTaskId(event.target.value)
+                  setParentTaskId(
+                    event.target.value
+                  )
                 }
+                disabled={!workstreamId}
               >
                 <option value="">
                   상위 Task 없음
                 </option>
 
-                {tasks
-                  .filter(
-                    (task) => task.id !== editingTaskId
-                  )
-                  .map((task) => (
-                    <option
-                      key={task.id}
-                      value={task.id}
-                    >
-                      {task.title}
-                    </option>
-                  ))}
+                {parentTaskOptions.map((task) => (
+                  <option
+                    key={task.id}
+                    value={task.id}
+                  >
+                    {task.title}
+                  </option>
+                ))}
               </select>
             </label>
 
@@ -661,7 +735,9 @@ const renderTaskNode = (
                   type="date"
                   value={startDate}
                   onChange={(event) =>
-                    setStartDate(event.target.value)
+                    setStartDate(
+                      event.target.value
+                    )
                   }
                 />
               </label>
@@ -672,7 +748,9 @@ const renderTaskNode = (
                   type="date"
                   value={dueDate}
                   onChange={(event) =>
-                    setDueDate(event.target.value)
+                    setDueDate(
+                      event.target.value
+                    )
                   }
                 />
               </label>
@@ -695,69 +773,78 @@ const renderTaskNode = (
         </section>
       )}
 
-      {tasks.length === 0 ? (
-  <section className="panel">
-    <div className="empty-state large">
-      <strong>등록된 Task가 없습니다.</strong>
-      <p>
-        Workstream을 실제 수행 업무로 구체화해보세요.
-      </p>
-    </div>
-  </section>
-) : (
-  <div className="task-workstream-list">
-    {workstreams.map((workstream) => {
-      const workstreamTasks = tasks.filter(
-        (task) =>
-          task.workstreamId === workstream.id
-      );
-
-      if (workstreamTasks.length === 0) {
-        return null;
-      }
-
-      const rootTasks = workstreamTasks.filter(
-        (task) => {
-          if (!task.parentTaskId) {
-            return true;
-          }
-
-          const parentExists =
-            workstreamTasks.some(
-              (parent) =>
-                parent.id === task.parentTaskId
-            );
-
-          return !parentExists;
-        }
-      );
-
-      return (
-        <section
-          className="task-workstream-group"
-          key={workstream.id}
-        >
-          <div className="task-workstream-header">
-            <div>
-              <span>WORKSTREAM</span>
-              <h3>{workstream.name}</h3>
-            </div>
-
+      {loading ? (
+        <section className="panel">
+          <div className="empty-state large">
             <strong>
-              {workstreamTasks.length} Tasks
+              Task 데이터를 불러오는 중입니다.
             </strong>
           </div>
-
-          <div className="task-tree">
-            {rootTasks.map((task) =>
-              renderTaskNode(task)
-            )}
+        </section>
+      ) : tasks.length === 0 ? (
+        <section className="panel">
+          <div className="empty-state large">
+            <strong>
+              등록된 Task가 없습니다.
+            </strong>
+            <p>
+              Workstream을 실제 수행 업무로
+              구체화해보세요.
+            </p>
           </div>
         </section>
-      );
-    })}
-  </div>
-)}
+      ) : (
+        <div className="task-workstream-list">
+          {workstreams.map((workstream) => {
+            const workstreamTasks = tasks.filter(
+              (task) =>
+                task.workstreamId ===
+                workstream.id
+            );
+
+            if (workstreamTasks.length === 0) {
+              return null;
+            }
+
+            const rootTasks =
+              workstreamTasks.filter((task) => {
+                if (!task.parentTaskId) {
+                  return true;
+                }
+
+                return !workstreamTasks.some(
+                  (parent) =>
+                    parent.id ===
+                    task.parentTaskId
+                );
+              });
+
+            return (
+              <section
+                className="task-workstream-group"
+                key={workstream.id}
+              >
+                <div className="task-workstream-header">
+                  <div>
+                    <span>WORKSTREAM</span>
+                    <h3>{workstream.name}</h3>
+                  </div>
+
+                  <strong>
+                    {workstreamTasks.length} Tasks
+                  </strong>
+                </div>
+
+                <div className="task-tree">
+                  {rootTasks.map((task) =>
+                    renderTaskNode(task)
+                  )}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }

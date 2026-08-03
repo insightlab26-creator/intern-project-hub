@@ -1,25 +1,13 @@
-import ProjectDetailPage, {
-  type Project,
-} from "./ProjectDetailPage";
 import { useEffect, useState, type FormEvent } from "react";
+import ProjectDetailPage from "./ProjectDetailPage";
 import {
-  addDoc,
-  collection,
-  onSnapshot,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../firebase";
-
-type ProjectStatus =
-  | "PLANNING"
-  | "ACTIVE"
-  | "ON_HOLD"
-  | "COMPLETED"
-  | "ARCHIVED";
-
-type ProjectsPageProps = {
-  currentUserUid: string;
-};
+  createProject,
+  getProjects,
+} from "../services/projectService";
+import type {
+  Project,
+  ProjectStatus,
+} from "../types/domain";
 
 const statusLabels: Record<ProjectStatus, string> = {
   PLANNING: "기획",
@@ -29,41 +17,61 @@ const statusLabels: Record<ProjectStatus, string> = {
   ARCHIVED: "보관",
 };
 
-function ProjectsPage({ currentUserUid }: ProjectsPageProps) {
+function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] =
+    useState<Project | null>(null);
+
   const [showForm, setShowForm] = useState(false);
 
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<ProjectStatus>("PLANNING");
+  const [status, setStatus] =
+    useState<ProjectStatus>("PLANNING");
+
   const [startDate, setStartDate] = useState("");
   const [targetEndDate, setTargetEndDate] = useState("");
 
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "projects"),
-      (snapshot) => {
-        const projectList = snapshot.docs.map((document) => {
-          return {
-            id: document.id,
-            ...document.data(),
-          } as Project;
-        });
+    let isMounted = true;
 
-        setProjects(projectList);
-      },
-      (error) => {
+    const loadProjects = async () => {
+      try {
+        setLoading(true);
+        setMessage("");
+
+        const projectList = await getProjects();
+
+        if (isMounted) {
+          setProjects(projectList);
+        }
+      } catch (error) {
         console.error(error);
-        setMessage("프로젝트 목록을 불러오지 못했습니다.");
-      }
-    );
 
-    return unsubscribe;
+        if (isMounted) {
+          setMessage(
+            error instanceof Error
+              ? error.message
+              : "프로젝트 목록을 불러오지 못했습니다."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProjects();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleCreateProject = async (
@@ -72,7 +80,9 @@ function ProjectsPage({ currentUserUid }: ProjectsPageProps) {
     event.preventDefault();
 
     if (!code.trim() || !name.trim()) {
-      setMessage("프로젝트 코드와 프로젝트명은 필수입니다.");
+      setMessage(
+        "프로젝트 코드와 프로젝트명은 필수입니다."
+      );
       return;
     }
 
@@ -80,26 +90,19 @@ function ProjectsPage({ currentUserUid }: ProjectsPageProps) {
       setSaving(true);
       setMessage("");
 
-      await addDoc(collection(db, "projects"), {
-        code: code.trim(),
-        name: name.trim(),
-        description: description.trim(),
-
+      const createdProject = await createProject({
+        code,
+        name,
+        description,
         status,
-
         startDate: startDate || null,
         targetEndDate: targetEndDate || null,
-
-        ownerUids: [currentUserUid],
-
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-
-        createdBy: currentUserUid,
-        updatedBy: currentUserUid,
-
-        schemaVersion: 1,
       });
+
+      setProjects((previous) => [
+        createdProject,
+        ...previous,
+      ]);
 
       setCode("");
       setName("");
@@ -112,21 +115,25 @@ function ProjectsPage({ currentUserUid }: ProjectsPageProps) {
       setMessage("프로젝트가 생성되었습니다.");
     } catch (error) {
       console.error(error);
-      setMessage("프로젝트 생성에 실패했습니다.");
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "프로젝트 생성에 실패했습니다."
+      );
     } finally {
       setSaving(false);
     }
   };
 
   if (selectedProject) {
-  return (
-    <ProjectDetailPage
-      project={selectedProject}
-      currentUserUid={currentUserUid}
-      onBack={() => setSelectedProject(null)}
-    />
-  );
-}
+    return (
+      <ProjectDetailPage
+        project={selectedProject}
+        onBack={() => setSelectedProject(null)}
+      />
+    );
+  }
 
   return (
     <>
@@ -245,17 +252,29 @@ function ProjectsPage({ currentUserUid }: ProjectsPageProps) {
                 className="primary-button"
                 disabled={saving}
               >
-                {saving ? "저장 중..." : "프로젝트 생성"}
+                {saving
+                  ? "저장 중..."
+                  : "프로젝트 생성"}
               </button>
             </div>
           </form>
         </section>
       )}
 
-      {projects.length === 0 ? (
+      {loading ? (
         <div className="panel">
           <div className="empty-state large">
-            <strong>등록된 프로젝트가 없습니다.</strong>
+            <strong>
+              프로젝트 목록을 불러오는 중입니다.
+            </strong>
+          </div>
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="panel">
+          <div className="empty-state large">
+            <strong>
+              등록된 프로젝트가 없습니다.
+            </strong>
             <p>
               새 프로젝트를 생성해서 업무 관리를 시작하세요.
             </p>
@@ -267,7 +286,9 @@ function ProjectsPage({ currentUserUid }: ProjectsPageProps) {
             <article
               className="project-card"
               key={project.id}
-                onClick={() => setSelectedProject(project)}
+              onClick={() =>
+                setSelectedProject(project)
+              }
             >
               <div className="project-card-top">
                 <span className="project-code">

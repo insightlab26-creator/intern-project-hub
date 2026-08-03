@@ -1,29 +1,19 @@
-import { useEffect, useState, type FormEvent } from "react";
 import {
-  addDoc,
-  collection,
-  onSnapshot,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../firebase";
-
-type WorkstreamStatus =
-  | "PLANNING"
-  | "ACTIVE"
-  | "ON_HOLD"
-  | "COMPLETED";
-
-type Workstream = {
-  id: string;
-  name: string;
-  description: string;
-  status: WorkstreamStatus;
-  order: number;
-};
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
+import {
+  createWorkstream,
+  getWorkstreams,
+} from "../services/workstreamService";
+import type {
+  Workstream,
+  WorkstreamStatus,
+} from "../types/domain";
 
 type WorkstreamsTabProps = {
   projectId: string;
-  currentUserUid: string;
 };
 
 const statusLabels: Record<WorkstreamStatus, string> = {
@@ -35,46 +25,58 @@ const statusLabels: Record<WorkstreamStatus, string> = {
 
 function WorkstreamsTab({
   projectId,
-  currentUserUid,
 }: WorkstreamsTabProps) {
-  const [workstreams, setWorkstreams] = useState<Workstream[]>([]);
+  const [workstreams, setWorkstreams] = useState<
+    Workstream[]
+  >([]);
+
   const [showForm, setShowForm] = useState(false);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+
   const [status, setStatus] =
     useState<WorkstreamStatus>("PLANNING");
 
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const workstreamsRef = collection(
-      db,
-      "projects",
-      projectId,
-      "workstreams"
-    );
+    let isMounted = true;
 
-    const unsubscribe = onSnapshot(
-      workstreamsRef,
-      (snapshot) => {
-        const list = snapshot.docs.map((document) => ({
-          id: document.id,
-          ...document.data(),
-        })) as Workstream[];
+    const loadWorkstreams = async () => {
+      try {
+        setLoading(true);
+        setMessage("");
 
-        list.sort((a, b) => a.order - b.order);
+        const list = await getWorkstreams(projectId);
 
-        setWorkstreams(list);
-      },
-      (error) => {
+        if (isMounted) {
+          setWorkstreams(list);
+        }
+      } catch (error) {
         console.error(error);
-        setMessage("Workstream을 불러오지 못했습니다.");
-      }
-    );
 
-    return unsubscribe;
+        if (isMounted) {
+          setMessage(
+            error instanceof Error
+              ? error.message
+              : "Workstream을 불러오지 못했습니다."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadWorkstreams();
+
+    return () => {
+      isMounted = false;
+    };
   }, [projectId]);
 
   const handleCreate = async (
@@ -87,30 +89,30 @@ function WorkstreamsTab({
       return;
     }
 
+    const nextOrder =
+      workstreams.reduce(
+        (maximum, workstream) =>
+          Math.max(maximum, workstream.order),
+        0
+      ) + 1;
+
     try {
       setSaving(true);
       setMessage("");
 
-      await addDoc(
-        collection(
-          db,
-          "projects",
+      const createdWorkstream =
+        await createWorkstream({
           projectId,
-          "workstreams"
-        ),
-        {
-          name: name.trim(),
-          description: description.trim(),
+          name,
+          description,
           status,
-          order: workstreams.length + 1,
+          order: nextOrder,
+        });
 
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-
-          createdBy: currentUserUid,
-          updatedBy: currentUserUid,
-        }
-      );
+      setWorkstreams((previous) => [
+        ...previous,
+        createdWorkstream,
+      ]);
 
       setName("");
       setDescription("");
@@ -120,7 +122,12 @@ function WorkstreamsTab({
       setMessage("Workstream이 생성되었습니다.");
     } catch (error) {
       console.error(error);
-      setMessage("Workstream 생성에 실패했습니다.");
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Workstream 생성에 실패했습니다."
+      );
     } finally {
       setSaving(false);
     }
@@ -145,7 +152,9 @@ function WorkstreamsTab({
       </div>
 
       {message && (
-        <div className="notice-message">{message}</div>
+        <div className="notice-message">
+          {message}
+        </div>
       )}
 
       {showForm && (
@@ -202,14 +211,24 @@ function WorkstreamsTab({
                 className="primary-button"
                 disabled={saving}
               >
-                {saving ? "저장 중..." : "Workstream 생성"}
+                {saving
+                  ? "저장 중..."
+                  : "Workstream 생성"}
               </button>
             </div>
           </form>
         </section>
       )}
 
-      {workstreams.length === 0 ? (
+      {loading ? (
+        <section className="panel">
+          <div className="empty-state large">
+            <strong>
+              Workstream을 불러오는 중입니다.
+            </strong>
+          </div>
+        </section>
+      ) : workstreams.length === 0 ? (
         <section className="panel">
           <div className="empty-state large">
             <strong>
