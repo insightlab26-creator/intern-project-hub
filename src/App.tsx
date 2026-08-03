@@ -1,28 +1,18 @@
+import {
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
 import InternsPage from "./pages/InternsPage";
 import ProjectsPage from "./pages/ProjectsPage";
-import { useEffect, useState } from "react";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut as signOutFirebase,
-  type User,
-} from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "./firebase";
 import {
   getCurrentSession,
+  getUserProfile,
   signIn as signInSupabase,
   signOut as signOutSupabase,
+  type UserProfile,
 } from "./services/authService";
 import "./App.css";
-
-type UserProfile = {
-  displayName: string;
-  email: string;
-  globalRole: "ADMIN" | "INTERN" | "VIEWER";
-  status: "ACTIVE" | "INACTIVE";
-  internId: string | null;
-};
 
 type MenuItem = {
   name: string;
@@ -33,141 +23,149 @@ function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] =
+    useState<UserProfile | null>(null);
 
-/*
- * Firebase UID와 Supabase UUID는 서로 다른 값이므로
- * 별도의 상태로 관리한다.
- */
-const [supabaseUserId, setSupabaseUserId] =
-  useState<string | null>(null);
-
-const [profile, setProfile] =
-  useState<UserProfile | null>(null);
-
-const [firebaseLoading, setFirebaseLoading] =
-  useState(true);
-
-const [supabaseLoading, setSupabaseLoading] =
-  useState(true);
-
-const loading =
-  firebaseLoading || supabaseLoading;
+  const [loading, setLoading] = useState(true);
+  const [signingIn, setSigningIn] = useState(false);
   const [message, setMessage] = useState("");
 
-  const [activeMenu, setActiveMenu] = useState("Dashboard");
+  const [activeMenu, setActiveMenu] =
+    useState("Dashboard");
 
+  /*
+   * 페이지를 새로고침했을 때
+   * 기존 Supabase 로그인 세션과 프로필을 복원한다.
+   */
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      setProfile(null);
+    let isMounted = true;
 
-      if (firebaseUser) {
-        try {
-          const userRef = doc(db, "users", firebaseUser.uid);
-          const userSnap = await getDoc(userRef);
+    const restoreAuthentication = async () => {
+      try {
+        const session = await getCurrentSession();
 
-          if (userSnap.exists()) {
-            setProfile(userSnap.data() as UserProfile);
-          } else {
-            setMessage("사용자 권한 정보가 등록되어 있지 않습니다.");
+        if (!session) {
+          if (isMounted) {
+            setProfile(null);
           }
-        } catch (error) {
-          console.error(error);
-          setMessage("사용자 권한 정보를 불러오지 못했습니다.");
+
+          return;
+        }
+
+        const userProfile = await getUserProfile(
+          session.user.id
+        );
+
+        if (userProfile.status !== "ACTIVE") {
+          await signOutSupabase();
+
+          if (isMounted) {
+            setProfile(null);
+            setMessage(
+              "비활성화된 계정입니다. 관리자에게 문의해주세요."
+            );
+          }
+
+          return;
+        }
+
+        if (isMounted) {
+          setProfile(userProfile);
+          setMessage("");
+        }
+      } catch (error) {
+        console.error(error);
+
+        try {
+          await signOutSupabase();
+        } catch (signOutError) {
+          console.error(signOutError);
+        }
+
+        if (isMounted) {
+          setProfile(null);
+          setMessage(
+            "사용자 로그인 정보를 불러오지 못했습니다."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
         }
       }
+    };
 
-      setFirebaseLoading(false);
-    });
+    restoreAuthentication();
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  useEffect(() => {
-  let isMounted = true;
-
-  const restoreSupabaseSession = async () => {
-    try {
-      const session = await getCurrentSession();
-
-      if (isMounted) {
-        setSupabaseUserId(
-          session?.user.id ?? null
-        );
-      }
-    } catch (error) {
-      console.error(error);
-
-      if (isMounted) {
-        setSupabaseUserId(null);
-        setMessage(
-          "Supabase 로그인 정보를 확인하지 못했습니다."
-        );
-      }
-    } finally {
-      if (isMounted) {
-        setSupabaseLoading(false);
-      }
-    }
-  };
-
-  restoreSupabaseSession();
-
-  return () => {
-    isMounted = false;
-  };
-}, []);
-
   const handleLogin = async (
-  event: React.FormEvent<HTMLFormElement>
-) => {
-  event.preventDefault();
-  setMessage("");
-
-  try {
-    const supabaseSession =
-      await signInSupabase(email, password);
-
-    setSupabaseUserId(
-      supabaseSession.user.id
-    );
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
 
     try {
-      await signInWithEmailAndPassword(
-        auth,
+      setSigningIn(true);
+      setMessage("");
+
+      const session = await signInSupabase(
         email,
         password
       );
-    } catch (firebaseError) {
-      await signOutSupabase();
-      setSupabaseUserId(null);
 
-      throw firebaseError;
+      const userProfile = await getUserProfile(
+        session.user.id
+      );
+
+      if (userProfile.status !== "ACTIVE") {
+        await signOutSupabase();
+
+        throw new Error(
+          "비활성화된 계정입니다. 관리자에게 문의해주세요."
+        );
+      }
+
+      setProfile(userProfile);
+      setPassword("");
+      setActiveMenu("Dashboard");
+    } catch (error) {
+      console.error(error);
+
+      try {
+        await signOutSupabase();
+      } catch (signOutError) {
+        console.error(signOutError);
+      }
+
+      setProfile(null);
+
+      setMessage(
+        error instanceof Error &&
+          error.message.includes("비활성화")
+          ? error.message
+          : "로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요."
+      );
+    } finally {
+      setSigningIn(false);
     }
-  } catch (error) {
-    console.error(error);
-
-    setSupabaseUserId(null);
-
-    setMessage(
-      "로그인에 실패했습니다. Firebase와 Supabase의 계정 및 비밀번호를 확인해주세요."
-    );
-  }
-};
+  };
 
   const handleLogout = async () => {
-  await Promise.allSettled([
-    signOutFirebase(auth),
-    signOutSupabase(),
-  ]);
-
-  setSupabaseUserId(null);
-  setEmail("");
-  setPassword("");
-  setMessage("");
-  setActiveMenu("Dashboard");
-};
+    try {
+      await signOutSupabase();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setProfile(null);
+      setEmail("");
+      setPassword("");
+      setMessage("");
+      setActiveMenu("Dashboard");
+    }
+  };
 
   if (loading) {
     return (
@@ -177,14 +175,18 @@ const loading =
     );
   }
 
-  if (!user || !profile || !supabaseUserId) {
+  if (!profile) {
     return (
       <div className="login-page">
-        <form className="login-card" onSubmit={handleLogin}>
+        <form
+          className="login-card"
+          onSubmit={handleLogin}
+        >
           <h1>Intern Project Hub</h1>
 
           <p className="subtitle">
-            프로젝트와 업무를 연결하고 지식을 지속적으로 축적합니다.
+            프로젝트와 업무를 연결하고 지식을 지속적으로
+            축적합니다.
           </p>
 
           <label>
@@ -192,7 +194,9 @@ const loading =
             <input
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               required
             />
           </label>
@@ -202,16 +206,24 @@ const loading =
             <input
               type="password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
               required
             />
           </label>
 
-          <button type="submit" className="login-button">
-            로그인
+          <button
+            type="submit"
+            className="login-button"
+            disabled={signingIn}
+          >
+            {signingIn ? "로그인 중..." : "로그인"}
           </button>
 
-          {message && <p className="message">{message}</p>}
+          {message && (
+            <p className="message">{message}</p>
+          )}
         </form>
       </div>
     );
@@ -226,7 +238,10 @@ const loading =
     },
     {
       title: "WORK",
-      items: [{ name: "Projects" }, { name: "Tasks" }],
+      items: [
+        { name: "Projects" },
+        { name: "Tasks" },
+      ],
     },
     {
       title: "KNOWLEDGE",
@@ -239,9 +254,18 @@ const loading =
     {
       title: "MANAGEMENT",
       items: [
-        { name: "Interns", adminOnly: true },
-        { name: "Manager Notes", adminOnly: true },
-        { name: "Users", adminOnly: true },
+        {
+          name: "Interns",
+          adminOnly: true,
+        },
+        {
+          name: "Manager Notes",
+          adminOnly: true,
+        },
+        {
+          name: "Users",
+          adminOnly: true,
+        },
       ],
     },
   ];
@@ -260,19 +284,26 @@ const loading =
 
         <nav className="sidebar-nav">
           {menuGroups.map((group, groupIndex) => {
-            const visibleItems = group.items.filter(
-              (item) =>
-                !item.adminOnly || profile.globalRole === "ADMIN"
-            );
+            const visibleItems =
+              group.items.filter(
+                (item) =>
+                  !item.adminOnly ||
+                  profile.global_role === "ADMIN"
+              );
 
             if (visibleItems.length === 0) {
               return null;
             }
 
             return (
-              <div className="menu-group" key={groupIndex}>
+              <div
+                className="menu-group"
+                key={groupIndex}
+              >
                 {group.title && (
-                  <p className="menu-title">{group.title}</p>
+                  <p className="menu-title">
+                    {group.title}
+                  </p>
                 )}
 
                 {visibleItems.map((item) => (
@@ -283,7 +314,9 @@ const loading =
                         ? "menu-button active"
                         : "menu-button"
                     }
-                    onClick={() => setActiveMenu(item.name)}
+                    onClick={() =>
+                      setActiveMenu(item.name)
+                    }
                   >
                     {item.name}
                   </button>
@@ -295,11 +328,18 @@ const loading =
 
         <div className="sidebar-user">
           <div>
-            <strong>{profile.displayName}</strong>
-            <span>{profile.globalRole}</span>
+            <strong>
+              {profile.display_name}
+            </strong>
+
+            <span>
+              {profile.global_role}
+            </span>
           </div>
 
-          <button onClick={handleLogout}>로그아웃</button>
+          <button onClick={handleLogout}>
+            로그아웃
+          </button>
         </div>
       </aside>
 
@@ -313,19 +353,31 @@ const loading =
         ) : (
           <EmptyPage title={activeMenu} />
         )}
-        </main>
+      </main>
     </div>
   );
 }
 
-function Dashboard({ profile }: { profile: UserProfile }) {
+function Dashboard({
+  profile,
+}: {
+  profile: UserProfile;
+}) {
   return (
     <>
       <header className="page-header">
         <div>
-          <p className="eyebrow">DASHBOARD</p>
-          <h1>안녕하세요, {profile.displayName}님.</h1>
-          <p>현재 진행 중인 프로젝트와 업무를 확인하세요.</p>
+          <p className="eyebrow">
+            DASHBOARD
+          </p>
+
+          <h1>
+            안녕하세요, {profile.display_name}님.
+          </h1>
+
+          <p>
+            현재 진행 중인 프로젝트와 업무를 확인하세요.
+          </p>
         </div>
       </header>
 
@@ -363,8 +415,13 @@ function Dashboard({ profile }: { profile: UserProfile }) {
           </div>
 
           <div className="empty-state">
-            <strong>등록된 업무가 없습니다.</strong>
-            <p>Task가 등록되면 최근 업무가 표시됩니다.</p>
+            <strong>
+              등록된 업무가 없습니다.
+            </strong>
+
+            <p>
+              Task가 등록되면 최근 업무가 표시됩니다.
+            </p>
           </div>
         </div>
 
@@ -374,8 +431,14 @@ function Dashboard({ profile }: { profile: UserProfile }) {
           </div>
 
           <div className="empty-state">
-            <strong>검토할 항목이 없습니다.</strong>
-            <p>인턴이 업무나 산출물을 제출하면 여기에 표시됩니다.</p>
+            <strong>
+              검토할 항목이 없습니다.
+            </strong>
+
+            <p>
+              인턴이 업무나 산출물을 제출하면 여기에
+              표시됩니다.
+            </p>
           </div>
         </div>
       </section>
@@ -383,12 +446,19 @@ function Dashboard({ profile }: { profile: UserProfile }) {
   );
 }
 
-function EmptyPage({ title }: { title: string }) {
+function EmptyPage({
+  title,
+}: {
+  title: string;
+}) {
   return (
     <>
       <header className="page-header">
         <div>
-          <p className="eyebrow">INTERN PROJECT HUB</p>
+          <p className="eyebrow">
+            INTERN PROJECT HUB
+          </p>
+
           <h1>{title}</h1>
         </div>
       </header>
@@ -396,7 +466,9 @@ function EmptyPage({ title }: { title: string }) {
       <div className="panel">
         <div className="empty-state large">
           <strong>{title} 화면</strong>
-          <p>이 기능은 다음 단계에서 연결합니다.</p>
+          <p>
+            이 기능은 다음 단계에서 연결합니다.
+          </p>
         </div>
       </div>
     </>
