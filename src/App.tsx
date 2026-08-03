@@ -4,11 +4,15 @@ import { useEffect, useState } from "react";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signOut,
+  signOut as signOutFirebase,
   type User,
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import {
+  signIn as signInSupabase,
+  signOut as signOutSupabase,
+} from "./services/authService";
 import "./App.css";
 
 type UserProfile = {
@@ -63,26 +67,49 @@ function App() {
     return unsubscribe;
   }, []);
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setMessage("");
+  const handleLogin = async (
+  event: React.FormEvent<HTMLFormElement>
+) => {
+  event.preventDefault();
+  setMessage("");
+
+  try {
+    // 1. Supabase 로그인
+    await signInSupabase(email, password);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-      console.error(error);
-      setMessage("로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.");
+      // 2. 기존 Firestore 사용을 위한 Firebase 로그인
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+    } catch (firebaseError) {
+      // Firebase 로그인에 실패하면 Supabase 세션도 정리
+      await signOutSupabase();
+
+      throw firebaseError;
     }
-  };
+  } catch (error) {
+    console.error(error);
+
+    setMessage(
+      "로그인에 실패했습니다. Firebase와 Supabase의 계정 및 비밀번호를 확인해주세요."
+    );
+  }
+};
 
   const handleLogout = async () => {
-    await signOut(auth);
+  await Promise.allSettled([
+    signOutFirebase(auth),
+    signOutSupabase(),
+  ]);
 
-    setEmail("");
-    setPassword("");
-    setMessage("");
-    setActiveMenu("Dashboard");
-  };
+  setEmail("");
+  setPassword("");
+  setMessage("");
+  setActiveMenu("Dashboard");
+};
 
   if (loading) {
     return (
