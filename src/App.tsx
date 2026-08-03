@@ -10,6 +10,7 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import {
+  getCurrentSession,
   signIn as signInSupabase,
   signOut as signOutSupabase,
 } from "./services/authService";
@@ -33,9 +34,25 @@ function App() {
   const [password, setPassword] = useState("");
 
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  const [loading, setLoading] = useState(true);
+/*
+ * Firebase UID와 Supabase UUID는 서로 다른 값이므로
+ * 별도의 상태로 관리한다.
+ */
+const [supabaseUserId, setSupabaseUserId] =
+  useState<string | null>(null);
+
+const [profile, setProfile] =
+  useState<UserProfile | null>(null);
+
+const [firebaseLoading, setFirebaseLoading] =
+  useState(true);
+
+const [supabaseLoading, setSupabaseLoading] =
+  useState(true);
+
+const loading =
+  firebaseLoading || supabaseLoading;
   const [message, setMessage] = useState("");
 
   const [activeMenu, setActiveMenu] = useState("Dashboard");
@@ -61,11 +78,46 @@ function App() {
         }
       }
 
-      setLoading(false);
+      setFirebaseLoading(false);
     });
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+  let isMounted = true;
+
+  const restoreSupabaseSession = async () => {
+    try {
+      const session = await getCurrentSession();
+
+      if (isMounted) {
+        setSupabaseUserId(
+          session?.user.id ?? null
+        );
+      }
+    } catch (error) {
+      console.error(error);
+
+      if (isMounted) {
+        setSupabaseUserId(null);
+        setMessage(
+          "Supabase 로그인 정보를 확인하지 못했습니다."
+        );
+      }
+    } finally {
+      if (isMounted) {
+        setSupabaseLoading(false);
+      }
+    }
+  };
+
+  restoreSupabaseSession();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
   const handleLogin = async (
   event: React.FormEvent<HTMLFormElement>
@@ -74,24 +126,29 @@ function App() {
   setMessage("");
 
   try {
-    // 1. Supabase 로그인
-    await signInSupabase(email, password);
+    const supabaseSession =
+      await signInSupabase(email, password);
+
+    setSupabaseUserId(
+      supabaseSession.user.id
+    );
 
     try {
-      // 2. 기존 Firestore 사용을 위한 Firebase 로그인
       await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
     } catch (firebaseError) {
-      // Firebase 로그인에 실패하면 Supabase 세션도 정리
       await signOutSupabase();
+      setSupabaseUserId(null);
 
       throw firebaseError;
     }
   } catch (error) {
     console.error(error);
+
+    setSupabaseUserId(null);
 
     setMessage(
       "로그인에 실패했습니다. Firebase와 Supabase의 계정 및 비밀번호를 확인해주세요."
@@ -105,6 +162,7 @@ function App() {
     signOutSupabase(),
   ]);
 
+  setSupabaseUserId(null);
   setEmail("");
   setPassword("");
   setMessage("");
@@ -119,7 +177,7 @@ function App() {
     );
   }
 
-  if (!user || !profile) {
+  if (!user || !profile || !supabaseUserId) {
     return (
       <div className="login-page">
         <form className="login-card" onSubmit={handleLogin}>
@@ -251,7 +309,7 @@ function App() {
         ) : activeMenu === "Projects" ? (
           <ProjectsPage currentUserUid={user.uid} />
         ) : activeMenu === "Interns" ? (
-          <InternsPage currentUserUid={user.uid} />
+          <InternsPage />
         ) : (
           <EmptyPage title={activeMenu} />
         )}

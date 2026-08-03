@@ -1,29 +1,16 @@
-import { useEffect, useState, type FormEvent } from "react";
 import {
-  addDoc,
-  collection,
-  onSnapshot,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db } from "../firebase";
-
-type InternStatus = "PLANNED" | "ACTIVE" | "COMPLETED";
-
-type Intern = {
-  id: string;
-  name: string;
-  school: string;
-  major: string;
-  cohort: string;
-  startDate: string | null;
-  endDate: string | null;
-  status: InternStatus;
-  userUid: string | null;
-};
-
-type InternsPageProps = {
-  currentUserUid: string;
-};
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
+import {
+  createIntern,
+  getInterns,
+} from "../services/internService";
+import type {
+  Intern,
+  InternStatus,
+} from "../types/domain";
 
 const statusLabels: Record<InternStatus, string> = {
   PLANNED: "예정",
@@ -31,9 +18,7 @@ const statusLabels: Record<InternStatus, string> = {
   COMPLETED: "종료",
 };
 
-function InternsPage({
-  currentUserUid,
-}: InternsPageProps) {
+function InternsPage() {
   const [interns, setInterns] = useState<Intern[]>([]);
   const [showForm, setShowForm] = useState(false);
 
@@ -47,27 +32,45 @@ function InternsPage({
   const [status, setStatus] =
     useState<InternStatus>("ACTIVE");
 
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "interns"),
-      (snapshot) => {
-        const list = snapshot.docs.map((document) => ({
-          id: document.id,
-          ...document.data(),
-        })) as Intern[];
+    let isMounted = true;
 
-        setInterns(list);
-      },
-      (error) => {
+    const loadInterns = async () => {
+      try {
+        setLoading(true);
+        setMessage("");
+
+        const list = await getInterns();
+
+        if (isMounted) {
+          setInterns(list);
+        }
+      } catch (error) {
         console.error(error);
-        setMessage("인턴 목록을 불러오지 못했습니다.");
-      }
-    );
 
-    return unsubscribe;
+        if (isMounted) {
+          setMessage(
+            error instanceof Error
+              ? error.message
+              : "인턴 목록을 불러오지 못했습니다."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadInterns();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleCreate = async (
@@ -84,28 +87,20 @@ function InternsPage({
       setSaving(true);
       setMessage("");
 
-      await addDoc(collection(db, "interns"), {
-        name: name.trim(),
-        school: school.trim(),
-        major: major.trim(),
-        cohort: cohort.trim(),
-
+      const createdIntern = await createIntern({
+        name,
+        school,
+        major,
+        cohort,
         startDate: startDate || null,
         endDate: endDate || null,
-
         status,
-
-        // 로그인 계정은 나중에 연결
-        userUid: null,
-
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-
-        createdBy: currentUserUid,
-        updatedBy: currentUserUid,
-
-        schemaVersion: 1,
       });
+
+      setInterns((previous) => [
+        createdIntern,
+        ...previous,
+      ]);
 
       setName("");
       setSchool("");
@@ -119,7 +114,12 @@ function InternsPage({
       setMessage("인턴이 등록되었습니다.");
     } catch (error) {
       console.error(error);
-      setMessage("인턴 등록에 실패했습니다.");
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "인턴 등록에 실패했습니다."
+      );
     } finally {
       setSaving(false);
     }
@@ -257,12 +257,16 @@ function InternsPage({
         </section>
       )}
 
-      {interns.length === 0 ? (
+      {loading ? (
         <section className="panel">
           <div className="empty-state large">
-            <strong>
-              등록된 인턴이 없습니다.
-            </strong>
+            <strong>인턴 목록을 불러오는 중입니다.</strong>
+          </div>
+        </section>
+      ) : interns.length === 0 ? (
+        <section className="panel">
+          <div className="empty-state large">
+            <strong>등록된 인턴이 없습니다.</strong>
             <p>
               인턴을 등록하면 Task 담당자로 연결할 수 있습니다.
             </p>
