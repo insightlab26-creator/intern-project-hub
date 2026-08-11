@@ -1,0 +1,11 @@
+begin;
+select plan(4);
+insert into auth.users(id,email) values('00000000-0000-0000-0000-000000000121','preference-admin@example.com'),('00000000-0000-0000-0000-000000000122','preference-viewer@example.com');
+insert into public.profiles(id,email,display_name,global_role,status) values('00000000-0000-0000-0000-000000000121','preference-admin@example.com','Preference Admin','ADMIN','ACTIVE'),('00000000-0000-0000-0000-000000000122','preference-viewer@example.com','Preference Viewer','VIEWER','ACTIVE');
+set local role authenticated;set local request.jwt.claim.sub='00000000-0000-0000-0000-000000000121';
+select lives_ok($$insert into public.dashboard_preferences(profile_id,widget_keys)values('00000000-0000-0000-0000-000000000121',array['TOTAL_TASKS'])$$,'Admin stores own dashboard');
+select lives_ok($$insert into public.search_preferences(profile_id,scopes)values('00000000-0000-0000-0000-000000000121',array['TASKS'])$$,'User stores own search scopes');
+set local request.jwt.claim.sub='00000000-0000-0000-0000-000000000122';
+select throws_ok($$insert into public.dashboard_preferences(profile_id,widget_keys)values('00000000-0000-0000-0000-000000000122',array['TOTAL_TASKS'])$$,'42501',null,'Viewer cannot configure dashboard');
+select lives_ok($$insert into public.search_preferences(profile_id,scopes)values('00000000-0000-0000-0000-000000000122',array['PROJECTS'])$$,'Viewer stores own search scopes');
+select * from finish();rollback;

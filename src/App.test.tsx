@@ -1,0 +1,10 @@
+import { render,screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { beforeEach,describe,expect,it,vi } from "vitest";
+import App from "./App";
+import { getCurrentSession,getUserProfile } from "./services/authService";
+
+vi.mock("./services/authService",async(importOriginal)=>{const actual=await importOriginal<typeof import("./services/authService")>();return{...actual,getCurrentSession:vi.fn(),getUserProfile:vi.fn(),signOut:vi.fn(),signIn:vi.fn()}});
+vi.mock("./pages/DashboardPage",()=>({default:()=> <div>ADMIN DASHBOARD</div>}));
+const session={user:{id:"user-1"}} as Awaited<ReturnType<typeof getCurrentSession>>;
+describe("권한별 메뉴",()=>{beforeEach(()=>{vi.mocked(getCurrentSession).mockResolvedValue(session)});it("ADMIN에게 관리 메뉴를 표시한다",async()=>{vi.mocked(getUserProfile).mockResolvedValue({id:"user-1",email:"admin@example.com",display_name:"관리자",global_role:"ADMIN",status:"ACTIVE"});render(<MemoryRouter><App/></MemoryRouter>);expect(await screen.findByText("ADMIN DASHBOARD")).toBeInTheDocument();expect(screen.getByRole("link",{name:"Users"})).toBeInTheDocument();expect(screen.getByRole("link",{name:"Reports"})).toBeInTheDocument();});it("VIEWER에게 ADMIN 메뉴를 표시하지 않는다",async()=>{vi.mocked(getUserProfile).mockResolvedValue({id:"user-1",email:"viewer@example.com",display_name:"조회자",global_role:"VIEWER",status:"ACTIVE"});render(<MemoryRouter><App/></MemoryRouter>);expect(await screen.findByText("접근 가능한 기능이 없습니다.")).toBeInTheDocument();expect(screen.queryByRole("link",{name:"Users"})).not.toBeInTheDocument();});});

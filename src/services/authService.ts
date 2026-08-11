@@ -3,6 +3,12 @@ import { supabase } from "../supabase";
 
 export type AppRole = "ADMIN" | "INTERN" | "VIEWER";
 export type UserStatus = "ACTIVE" | "INACTIVE";
+export type InviteUserInput = {
+  email: string;
+  displayName: string;
+  role: AppRole;
+  redirectTo: string;
+};
 
 export type UserProfile = {
   id: string;
@@ -88,4 +94,50 @@ export async function getUserProfile(
   }
 
   return data as UserProfile;
+}
+
+export async function getUserProfiles(): Promise<UserProfile[]> {
+  const { data, error } = await supabase.from("profiles")
+    .select("id,email,display_name,global_role,status")
+    .order("display_name");
+  if (error) throw new Error(`사용자 목록 조회 실패: ${error.message}`);
+  return (data ?? []) as UserProfile[];
+}
+
+export async function updateUserProfile(profile: Pick<UserProfile, "id" | "display_name" | "global_role" | "status">): Promise<void> {
+  const { error } = await supabase.rpc("admin_update_profile", {
+    p_profile_id: profile.id,
+    p_display_name: profile.display_name.trim(),
+    p_global_role: profile.global_role,
+    p_status: profile.status,
+  });
+  if (error) throw new Error(`사용자 수정 실패: ${error.message}`);
+}
+
+async function invokeUserAdmin(body: Record<string, unknown>): Promise<void> {
+  const { error } = await supabase.functions.invoke("admin-user-management", { body });
+  if (error) throw new Error(`계정 관리 요청 실패: ${error.message}`);
+}
+
+export async function inviteUser(input: InviteUserInput): Promise<void> {
+  await invokeUserAdmin({
+    action: "invite",
+    email: input.email.trim().toLowerCase(),
+    displayName: input.displayName.trim(),
+    role: input.role,
+    redirectTo: input.redirectTo,
+  });
+}
+
+export async function sendPasswordReset(userId: string, redirectTo: string): Promise<void> {
+  await invokeUserAdmin({ action: "password-reset", userId, redirectTo });
+}
+
+export async function setUserAccountStatus(userId: string, status: UserStatus): Promise<void> {
+  await invokeUserAdmin({ action: "set-status", userId, status });
+}
+
+export async function updateCurrentPassword(password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw new Error(`비밀번호 변경 실패: ${error.message}`);
 }

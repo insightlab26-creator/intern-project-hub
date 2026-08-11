@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#f4f5f8; font-family:'Manrope',sans-serif; }
+  a { color:#3b5bff; text-decoration:none; }
+  a:hover { color:#243aad; text-decoration:underline; }
+  ::-webkit-scrollbar { width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb { background:#d8dbe3; border-radius:8px; }
+</style>
+</helmet>
+<div style="display:flex;min-height:100vh;background:#f4f5f8;color:#181a20;">
+
+  <!-- Sidebar -->
+  <div style="width:252px;flex-shrink:0;background:#ffffff;border-right:1px solid #ececf0;display:flex;flex-direction:column;padding:22px 16px;gap:22px;">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:4px 8px 0;">
+      <img src="assets/bx-intern-logo-3.png" alt="BX Intern" style="width:120px;height:120px;object-fit:contain;">
+      <div style="font-family:'Sora',sans-serif;font-weight:700;font-size:13.5px;color:#14161a;">BX Intern Idea Lab</div>
+    </div>
+
+    <sc-for list="{{navGroups}}" as="group" hint-placeholder-count="5">
+      <div>
+        <sc-if value="{{group.label}}" hint-placeholder-val="{{true}}">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:0.08em;color:#b3b6c0;padding:0 10px 8px;">{{group.label}}</div>
+        </sc-if>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <sc-for list="{{group.items}}" as="item" hint-placeholder-count="3">
+            <div onClick="{{item.onClick}}" style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:12px;font-size:13.5px;font-weight:600;cursor:pointer;color:{{item.textColor}};background:{{item.bg}};">
+              <div style="width:6px;height:6px;border-radius:2px;background:{{item.textColor}};opacity:0.7;flex-shrink:0;"></div>
+              {{item.name}}
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+
+    <div style="flex:1;"></div>
+
+    <div style="background:#14161a;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:22px;height:22px;border-radius:6px;background:#3b5bff;"></div>
+        <div style="font-size:12px;font-weight:700;color:#fff;">Weekly Digest</div>
+      </div>
+      <div style="font-size:13.5px;font-weight:700;color:#fff;line-height:1.35;">팀 리포트를 이메일로 받아보세요</div>
+      <div style="background:#fff;color:#14161a;font-size:12px;font-weight:700;padding:9px 0;border-radius:20px;text-align:center;cursor:pointer;margin-top:2px;white-space:nowrap;flex-shrink:0;">설정하기</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div style="flex:1;padding:28px 36px 60px;display:flex;flex-direction:column;gap:22px;min-width:0;">
+
+    <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;white-space:nowrap;">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#7c6bf5,#3b5bff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;">E</div>
+        <div>
+          <div style="font-size:12.5px;font-weight:700;color:#14161a;">Esther</div>
+          <div style="font-size:10px;font-weight:700;color:#3b5bff;letter-spacing:0.04em;">ADMIN</div>
+        </div>
+      </div>
+      <div style="padding:7px 14px;border-radius:10px;background:#fff;border:1px solid #ececf0;font-size:12px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">로그아웃</div>
+    </div>
+
+    <sc-if value="{{isDashboard}}" hint-placeholder-val="{{true}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:flex-start;align-items:center;gap:14px;">
+          <div style="display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #ececf0;border-radius:12px;padding:9px 14px;width:260px;">
+            <div style="width:14px;height:14px;border-radius:50%;border:1.6px solid #b3b6c0;flex-shrink:0;"></div>
+            <div style="font-size:13px;color:#b3b6c0;flex:1;">검색...</div>
+            <div style="font-size:11px;color:#c4c7d0;font-weight:700;">⌘K</div>
+          </div>
+          <div style="flex:1;"></div>
+          <div onClick="{{toggleSettings}}" style="padding:10px 16px;border-radius:20px;background:#fff;border:1px solid #ececf0;font-size:13px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">{{settingsLabel}}</div>
+          <div style="padding:10px 18px;border-radius:20px;background:#14161a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ 새 업무</div>
+        </div>
+
+        <div>
+          <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;">대시보드</div>
+          <div style="font-size:13.5px;color:#8a8e99;margin-top:6px;">2026년 8월 11일 화요일 · 오늘 완료할 일이 0개 있어요</div>
+        </div>
+
+        <sc-if value="{{settingsOpen}}" hint-placeholder-val="{{false}}">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#14161a;">Dashboard 지표 설정</div>
+              <div style="font-size:13px;color:#8a8e99;margin-top:4px;">표시할 지표를 선택하고 순서를 조정합니다.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+              <sc-for list="{{metricGrid}}" as="m" hint-placeholder-count="13">
+                <div onClick="{{m.onToggle}}" style="display:flex;align-items:center;gap:8px;border:1px solid #ececf0;border-radius:10px;padding:10px 12px;cursor:pointer;white-space:nowrap;">
+                  <div style="width:16px;height:16px;border-radius:4px;flex-shrink:0;background:{{m.checked}} ? '#3b5bff' : '#fff';border:1.5px solid {{m.checked}} ? '#3b5bff' : '#dcdfe6';color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;">{{m.checkMark}}</div>
+                  <div style="font-size:13px;color:#3d4048;font-weight:600;">{{m.label}}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <sc-for list="{{orderList}}" as="o" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:8px;border:1px solid #ececf0;border-radius:10px;padding:8px 12px;white-space:nowrap;">
+                  <div style="font-size:12.5px;font-weight:600;color:#3d4048;">{{o.num}}. {{o.label}}</div>
+                  <div onClick="{{o.onUp}}" style="width:20px;height:20px;border-radius:5px;background:#f2f3f6;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;">↑</div>
+                  <div onClick="{{o.onDown}}" style="width:20px;height:20px;border-radius:5px;background:#f2f3f6;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;">↓</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <div onClick="{{toggleSettings}}" style="padding:10px 22px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">설정 저장</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+          <div style="background:linear-gradient(135deg,#8b7bf7,#3b5bff);border-radius:20px;padding:22px;color:#fff;position:relative;overflow:hidden;">
+            <div style="font-size:13px;font-weight:600;opacity:0.85;">전체 업무</div>
+            <div style="font-family:'Sora',sans-serif;font-size:32px;font-weight:800;margin-top:10px;">17건</div>
+            <div style="font-size:12px;opacity:0.85;margin-top:6px;font-weight:600;">등록된 전체 업무</div>
+          </div>
+          <sc-for list="{{statCards}}" as="c" hint-placeholder-count="3">
+            <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:22px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:13px;font-weight:600;color:#8a8e99;">{{c.label}}</div>
+                <div style="width:8px;height:8px;border-radius:50%;background:{{c.dot}};"></div>
+              </div>
+              <div style="font-family:'Sora',sans-serif;font-size:30px;font-weight:800;color:#14161a;margin-top:10px;">{{c.value}}</div>
+              <div style="font-size:12px;color:{{c.subColor}};margin-top:6px;font-weight:600;">{{c.sub}}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:22px;padding:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;">
+            <div>
+              <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">CONTROL TOWER</div>
+              <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#14161a;margin-top:4px;white-space:nowrap;">Project 포트폴리오</div>
+            </div>
+            <a href="#" style="flex-shrink:0;">전체 보기</a>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+            <sc-for list="{{portfolio}}" as="p" hint-placeholder-count="4">
+              <div style="background:#f7f8fb;border:1px solid #ececf0;border-radius:16px;padding:18px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="font-size:12.5px;font-weight:700;color:#5a5e69;">{{p.label}}</div>
+                  <div style="width:7px;height:7px;border-radius:50%;background:{{p.dot}};"></div>
+                </div>
+                <div style="font-family:'Sora',sans-serif;font-size:24px;font-weight:800;color:#14161a;margin-top:8px;">{{p.value}}</div>
+                <div style="font-size:11.5px;color:#9296a1;margin-top:6px;">{{p.sub}}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="text-align:center;padding:28px 0 4px;font-size:13px;color:#b3b6c0;">예정된 Next Review가 없습니다.</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:22px;padding:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px;">
+              <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">주간 업무 진행률</div>
+              <div style="font-size:12px;color:#9296a1;">이번 주</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:28px;">
+              <div style="position:relative;width:110px;height:110px;border-radius:50%;background:conic-gradient(#eef0f5 0deg 360deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <div style="width:78px;height:78px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                  <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:800;color:#14161a;">0%</div>
+                  <div style="font-size:10px;color:#9296a1;">전체 완료</div>
+                </div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+                <sc-for list="{{weekly}}" as="w" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:7px;height:7px;border-radius:50%;background:{{w.dot}};flex-shrink:0;"></div>
+                    <div style="font-size:12.5px;color:#8a8e99;width:44px;flex-shrink:0;">{{w.label}}</div>
+                    <div style="flex:1;height:6px;border-radius:4px;background:#eef0f5;overflow:hidden;">
+                      <div style="height:100%;border-radius:4px;background:{{w.dot}};width:{{w.pct}};"></div>
+                    </div>
+                    <div style="font-size:12.5px;font-weight:700;color:#14161a;width:18px;text-align:right;">{{w.count}}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:22px;padding:24px;">
+            <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;margin-bottom:20px;">팀원별 업무 분배</div>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <sc-for list="{{team}}" as="t" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div style="width:30px;height:30px;border-radius:9px;background:{{t.color}};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;color:#fff;flex-shrink:0;">{{t.initial}}</div>
+                  <div style="font-size:13px;font-weight:600;color:#14161a;width:56px;flex-shrink:0;">{{t.name}}</div>
+                  <div style="flex:1;height:8px;border-radius:5px;background:#eef0f5;overflow:hidden;">
+                    <div style="height:100%;border-radius:5px;background:{{t.color}};width:{{t.pct}};"></div>
+                  </div>
+                  <div style="font-size:12.5px;font-weight:700;color:#8a8e99;width:26px;text-align:right;">{{t.count}}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:22px;padding:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;">
+              <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">할 일 목록</div>
+              <a href="#" style="white-space:nowrap;flex-shrink:0;">전체 보기</a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <sc-for list="{{todos}}" as="td" hint-placeholder-count="5">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:11px 4px;border-bottom:1px solid #f2f3f6;">
+                  <div style="width:7px;height:7px;border-radius:50%;background:{{td.dot}};margin-top:6px;flex-shrink:0;"></div>
+                  <div style="flex:1;">
+                    <div style="font-size:13.5px;font-weight:600;color:#14161a;">{{td.title}}</div>
+                    <div style="font-size:11.5px;color:#9296a1;margin-top:3px;">{{td.sub}}</div>
+                  </div>
+                  <div style="padding:5px 10px;border-radius:7px;font-size:11px;font-weight:700;flex-shrink:0;color:{{td.doneColor}};background:{{td.doneBg}};white-space:nowrap;">{{td.status}}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:22px;padding:24px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;">
+              <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">마감 임박 알림</div>
+              <a href="#" style="white-space:nowrap;flex-shrink:0;">전체 보기</a>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <sc-for list="{{deadlines}}" as="d" hint-placeholder-count="7">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:{{d.bg}};border-left:3px solid {{d.bar}};">
+                  <div style="flex:1;">
+                    <div style="font-size:13px;font-weight:700;color:#14161a;">{{d.title}}</div>
+                    <div style="font-size:11.5px;color:#8a8e99;margin-top:3px;">{{d.who}}</div>
+                  </div>
+                  <div style="font-size:12.5px;font-weight:800;color:{{d.bar}};flex-shrink:0;">{{d.tag}}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#14161a;border-radius:22px;padding:24px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <div style="padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;color:#14161a;background:#fff;white-space:nowrap;">관리자 전용</div>
+            <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#fff;">검토 대기 업무</div>
+            <div style="flex:1;"></div>
+            <a href="#" style="color:#9db3ff;white-space:nowrap;flex-shrink:0;">전체 보기</a>
+          </div>
+          <div style="text-align:center;padding:48px 0 20px;font-size:13.5px;color:#6b6f79;">표시할 업무가 없습니다.</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isSearch}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">DISCOVERY</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Global Search</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">권한이 허용된 업무·지식·운영 데이터를 한 번에 검색합니다.</div>
+          </div>
+          <div onClick="{{toggleSearchSettings}}" style="padding:10px 16px;border-radius:20px;background:#fff;border:1px solid #ececf0;font-size:13px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">{{searchSettingsLabel}}</div>
+        </div>
+
+        <sc-if value="{{searchSettingsOpen}}" hint-placeholder-val="{{false}}">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#14161a;">내 검색 범위</div>
+              <div style="font-size:13px;color:#8a8e99;margin-top:4px;">선택은 계정별로 저장되며 실제 결과는 RLS 권한 범위로 제한됩니다.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+              <sc-for list="{{scopeGrid}}" as="sc" hint-placeholder-count="7">
+                <div onClick="{{sc.onToggle}}" style="display:flex;align-items:center;gap:8px;border:1px solid #ececf0;border-radius:10px;padding:10px 12px;cursor:pointer;white-space:nowrap;">
+                  <div style="width:16px;height:16px;border-radius:4px;flex-shrink:0;background:{{sc.checked}} ? '#3b5bff' : '#fff';border:1.5px solid {{sc.checked}} ? '#3b5bff' : '#dcdfe6';color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;">{{sc.checkMark}}</div>
+                  <div style="font-size:13px;color:#3d4048;font-weight:600;">{{sc.label}}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div onClick="{{toggleSearchSettings}}" style="padding:10px 22px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;width:fit-content;">검색 범위 저장</div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;gap:12px;background:#fff;border-radius:16px;padding:14px;border:1px solid #ececf0;">
+          <div style="flex:1;border:1.6px solid #14161a;border-radius:12px;padding:12px 16px;font-size:14px;color:#b3b6c0;">프로젝트, 업무, 문서, 의사결정 검색</div>
+          <div style="padding:0 26px;border-radius:12px;background:#3b5bff;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;cursor:pointer;white-space:nowrap;flex-shrink:0;">검색</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isReports}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">REPORTING</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Reports</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">운영 데이터를 필터링하고 Excel 또는 CSV로 내보냅니다.</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-shrink:0;">
+            <div style="padding:10px 20px;border-radius:20px;background:#fff;border:1px solid #ececf0;font-size:13px;font-weight:700;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">CSV</div>
+            <div style="padding:10px 20px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Excel</div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:20px;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1fr;gap:14px;">
+          <sc-for list="{{reportFilters}}" as="f" hint-placeholder-count="5">
+            <div>
+              <div style="font-size:11.5px;font-weight:700;color:#8a8e99;margin-bottom:6px;">{{f.label}}</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:10px 12px;font-size:13px;color:#14161a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{f.value}}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:0;overflow:hidden;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid #ececf0;">
+            <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">프로젝트 진행 보고서</div>
+            <div style="font-size:12.5px;color:#9296a1;">2행</div>
+          </div>
+          <div style="overflow-x:auto;">
+            <div style="display:grid;grid-template-columns:110px 1.6fr 90px 100px 110px 80px 80px 70px 70px 70px 90px;padding:12px 22px;font-size:11.5px;font-weight:700;color:#9296a1;border-bottom:1px solid #f2f3f6;">
+              <div style="white-space:nowrap;">프로젝트 코드</div><div style="white-space:nowrap;">프로젝트명</div><div style="white-space:nowrap;">상태</div><div style="white-space:nowrap;">시작일</div><div style="white-space:nowrap;">목표 종료일</div><div style="white-space:nowrap;">전체업무</div><div style="white-space:nowrap;">진행중</div><div style="white-space:nowrap;">검토</div><div style="white-space:nowrap;">완료</div><div style="white-space:nowrap;">지연</div><div style="white-space:nowrap;">완료율(%)</div>
+            </div>
+            <sc-for list="{{reportRows}}" as="r" hint-placeholder-count="2">
+              <div style="display:grid;grid-template-columns:110px 1.6fr 90px 100px 110px 80px 80px 70px 70px 70px 90px;padding:14px 22px;font-size:13px;color:#14161a;border-bottom:1px solid #f2f3f6;align-items:center;">
+                <div style="font-weight:700;">{{r.code}}</div><div>{{r.name}}</div>
+                <div><span style="background:#e0f7e9;color:#1a7f4b;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;">{{r.status}}</span></div>
+                <div>{{r.start}}</div><div>{{r.due}}</div><div>{{r.total}}</div><div>{{r.inprogress}}</div><div>{{r.review}}</div><div>{{r.done}}</div><div>{{r.delayed}}</div><div>{{r.rate}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isProjects}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">CONTROL TOWER</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Projects</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">실험과 자산 고도화 프로젝트의 목적·단계·검토 일정을 관리합니다.</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-shrink:0;">
+            <div style="padding:10px 18px;border-radius:20px;background:#fff;border:1px solid #ececf0;font-size:13px;font-weight:700;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">Plan Import</div>
+            <div style="padding:10px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ 새 프로젝트</div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:18px 20px;display:flex;gap:14px;">
+          <sc-for list="{{projectFilters}}" as="pf" hint-placeholder-count="3">
+            <div style="flex:1;border:1px solid #dcdfe6;border-radius:10px;padding:10px 14px;font-size:13px;color:#14161a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{pf}}</div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+          <sc-for list="{{projectCards}}" as="pc" hint-placeholder-count="2">
+            <div onClick="{{pc.onOpen}}" style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;cursor:pointer;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:12px;font-weight:700;color:#9296a1;">{{pc.code}} · {{pc.tag}}</div>
+                <span style="background:#fdf3e6;color:#a66a00;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{pc.status}}</span>
+              </div>
+              <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#14161a;line-height:1.35;">{{pc.title}}</div>
+              <div style="font-size:13px;color:#6b6f79;line-height:1.55;">{{pc.desc}}</div>
+              <div style="height:1px;background:#f2f3f6;margin-top:4px;"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;gap:16px;font-size:12px;color:#9296a1;">
+                  <div>단계 · <span style="color:#5a5e69;font-weight:600;">-</span></div>
+                  <div>Next Review · <span style="color:#5a5e69;font-weight:600;">-</span></div>
+                </div>
+                <div style="padding:7px 16px;border-radius:16px;border:1px solid #dcdfe6;font-size:12.5px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">수정</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isProjectDetail}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <a href="#" onClick="{{backToProjects}}" style="font-size:13px;font-weight:600;white-space:nowrap;width:fit-content;">← Projects</a>
+        <div style="display:flex;gap:8px;">
+          <span style="background:#f2f3f6;color:#5a5e69;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{pd.code}}</span>
+          <span style="background:#f2f3f6;color:#5a5e69;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{pd.tag}}</span>
+          <span style="background:#fdf3e6;color:#a66a00;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{pd.status}}</span>
+        </div>
+        <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;">{{pd.title}}</div>
+        <div style="font-size:13.5px;color:#8a8e99;">{{pd.desc}}</div>
+
+        <div style="display:flex;gap:26px;border-bottom:1px solid #ececf0;">
+          <sc-for list="{{pdTabs}}" as="tb" hint-placeholder-count="6">
+            <div onClick="{{tb.onClick}}" style="padding-bottom:12px;font-size:14px;font-weight:{{tb.active}} ? 700 : 600;color:{{tb.active}} ? '#14161a' : '#9296a1';border-bottom:2px solid {{tb.active}} ? '#14161a' : 'transparent';cursor:pointer;white-space:nowrap;">{{tb.label}}</div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{pdTabOverview}}" hint-placeholder-val="{{true}}">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+              <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:20px;">
+                <div style="font-size:12.5px;color:#9296a1;">현재 단계</div>
+                <div style="font-size:18px;font-weight:700;color:#14161a;margin-top:10px;">-</div>
+              </div>
+              <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:20px;">
+                <div style="font-size:12.5px;color:#9296a1;">프로젝트 기간</div>
+                <div style="font-size:18px;font-weight:700;color:#14161a;margin-top:10px;white-space:nowrap;">{{pd.period}}</div>
+              </div>
+              <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:20px;">
+                <div style="font-size:12.5px;color:#9296a1;">Next Review</div>
+                <div style="font-size:18px;font-weight:700;color:#14161a;margin-top:10px;">-</div>
+              </div>
+              <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:20px;">
+                <div style="font-size:12.5px;color:#9296a1;">분야</div>
+                <div style="font-size:18px;font-weight:700;color:#14161a;margin-top:10px;">-</div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">CONTEXT</div>
+                <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#14161a;margin-top:4px;">프로젝트 맥락</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div style="background:#f7f8fb;border-radius:14px;padding:16px;">
+                  <div style="font-size:11.5px;font-weight:700;color:#9296a1;">배경</div>
+                  <div style="font-size:13.5px;color:#3d4048;margin-top:8px;">등록된 내용이 없습니다.</div>
+                </div>
+                <div style="background:#f7f8fb;border-radius:14px;padding:16px;">
+                  <div style="font-size:11.5px;font-weight:700;color:#9296a1;">기대 결과</div>
+                  <div style="font-size:13.5px;color:#3d4048;margin-top:8px;">등록된 내용이 없습니다.</div>
+                </div>
+              </div>
+              <div style="background:#f7f8fb;border-radius:14px;padding:16px;">
+                <div style="font-size:11.5px;font-weight:700;color:#9296a1;">키워드</div>
+                <div style="font-size:13.5px;color:#3d4048;margin-top:8px;">등록된 내용이 없습니다.</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{pdTabWorkPackages}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:#14161a;">Work Packages</div>
+                <div style="font-size:13px;color:#8a8e99;margin-top:6px;">개인 To-do가 아닌 프로젝트의 상위 실행 단위와 진행 상태를 관리합니다.</div>
+              </div>
+              <div style="padding:11px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">+ Work Package 추가</div>
+            </div>
+            <sc-if value="{{pdHasWorkPackages}}" hint-placeholder-val="{{true}}">
+              <sc-for list="{{pd.workstreams}}" as="ws" hint-placeholder-count="2">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+                    <div>
+                      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#b3b6c0;">WORKSTREAM</div>
+                      <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;margin-top:2px;">{{ws.name}}</div>
+                    </div>
+                    <div style="font-size:12.5px;color:#9296a1;white-space:nowrap;">{{ws.items.length}} Work Packages</div>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:14px;">
+                    <sc-for list="{{ws.items}}" as="wp" hint-placeholder-count="2">
+                      <div style="background:#fff;border:1px solid #ececf0;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                          <div style="font-size:15px;font-weight:700;color:#14161a;">• {{wp.title}}</div>
+                          <div style="display:flex;gap:8px;flex-shrink:0;">
+                            <span style="background:{{wp.bg}};color:{{wp.color}};font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{wp.status}}</span>
+                            <div style="padding:6px 14px;border-radius:14px;border:1px solid #dcdfe6;font-size:12px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;">수정</div>
+                          </div>
+                        </div>
+                        <div style="font-size:13px;color:#9296a1;">{{wp.desc}}</div>
+                        <div style="height:1px;background:#f2f3f6;"></div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;">
+                          <div><div style="font-size:11px;color:#b3b6c0;">프로젝트 영역</div><div style="font-size:13px;color:#3d4048;margin-top:4px;">{{wp.area}}</div></div>
+                          <div><div style="font-size:11px;color:#b3b6c0;">담당</div><div style="font-size:13px;color:#3d4048;margin-top:4px;">{{wp.who}}</div></div>
+                          <div><div style="font-size:11px;color:#b3b6c0;">우선순위</div><div style="font-size:13px;color:#3d4048;margin-top:4px;">{{wp.priority}}</div></div>
+                          <div><div style="font-size:11px;color:#b3b6c0;">마감</div><div style="font-size:13px;color:#3d4048;margin-top:4px;">{{wp.due}}</div></div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{pdTabDocuments}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:#14161a;">Project Documents</div>
+                <div style="font-size:13px;color:#8a8e99;margin-top:6px;">파일은 Teams에 보관하고 여기에는 찾기 쉬운 링크만 등록합니다.</div>
+              </div>
+              <div style="padding:11px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">+ 문서 링크</div>
+            </div>
+            <div style="background:#fff;border:1px solid #ececf0;border-radius:14px;padding:12px 16px;font-size:13px;color:#b3b6c0;">제목·설명·URL 검색</div>
+            <sc-if value="{{pdHasDocuments}}" hint-placeholder-val="{{false}}">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+                <sc-for list="{{pd.documents}}" as="doc" hint-placeholder-count="1">
+                  <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;gap:8px;">
+                      <span style="background:#fdf3e6;color:#a66a00;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{doc.tag}}</span>
+                      <span style="background:#e0f7e9;color:#1a7f4b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{doc.status}}</span>
+                    </div>
+                    <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#14161a;line-height:1.35;">{{doc.title}}</div>
+                    <div style="font-size:13px;color:#8a8e99;">{{doc.desc}}</div>
+                    <div style="font-size:12.5px;color:#b3b6c0;text-decoration:underline;">{{doc.link}}</div>
+                    <div style="display:flex;gap:10px;margin-top:6px;">
+                      <div style="padding:9px 18px;border-radius:16px;background:#3b5bff;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;">Teams에서 열기</div>
+                      <div style="padding:9px 18px;border-radius:16px;border:1px solid #dcdfe6;color:#3d4048;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;">수정</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{pdHasNoDocuments}}" hint-placeholder-val="{{true}}">
+              <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:80px 0;text-align:center;font-size:13.5px;color:#b3b6c0;">등록된 문서 링크가 없습니다.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{pdTabReview}}" hint-placeholder-val="{{false}}">
+          <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start;">
+            <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">REVIEW GATE</div>
+                <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#14161a;margin-top:4px;">판정과 다음 방향</div>
+                <div style="font-size:13px;color:#8a8e99;margin-top:6px;">회의록을 다시 작성하지 않고 결론과 다음 조치만 남깁니다.</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <sc-for list="{{gateOptions}}" as="g" hint-placeholder-count="4">
+                  <div onClick="{{g.onSelect}}" style="border:1.5px solid {{g.selected}} ? '#3b5bff' : '#ececf0';background:{{g.selected}} ? '#eef1ff' : '#fff';border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;gap:10px;align-items:flex-start;">
+                    <div style="width:16px;height:16px;border-radius:50%;border:1.5px solid {{g.selected}} ? '#3b5bff' : '#dcdfe6';flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;">
+                      <sc-if value="{{g.selected}}" hint-placeholder-val="{{false}}"><div style="width:8px;height:8px;border-radius:50%;background:#3b5bff;"></div></sc-if>
+                    </div>
+                    <div>
+                      <div style="font-size:13.5px;font-weight:700;color:#14161a;">{{g.label}}</div>
+                      <div style="font-size:12px;color:#8a8e99;margin-top:3px;">{{g.desc}}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:#3d4048;margin-bottom:6px;">결정 요약 *</div>
+                <div style="border:1px solid #dcdfe6;border-radius:12px;padding:14px;font-size:13px;color:#b3b6c0;min-height:70px;">무엇을 어떻게 하기로 했는지 짧게 입력하세요.</div>
+              </div>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:#3d4048;margin-bottom:6px;">다음 조치</div>
+                <div style="border:1px solid #dcdfe6;border-radius:12px;padding:14px;font-size:13px;color:#b3b6c0;min-height:70px;">후속 작업이나 수정 방향을 입력하세요.</div>
+              </div>
+              <div>
+                <div style="font-size:12.5px;font-weight:700;color:#3d4048;margin-bottom:6px;">Teams 회의록 링크</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:10px 14px;font-size:13px;color:#b3b6c0;">https://</div>
+              </div>
+              <div style="padding:11px 0;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;white-space:nowrap;">판정 기록</div>
+            </div>
+            <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;">
+                <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">판정 이력</div>
+                <div style="font-size:12px;color:#9296a1;">0건</div>
+              </div>
+              <div style="background:#f7f8fb;border-radius:14px;padding:60px 0;text-align:center;font-size:13px;color:#b3b6c0;">아직 Review Gate 기록이 없습니다.</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{pdTabAreas}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+              <div>
+                <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:#14161a;">Project Areas</div>
+                <div style="font-size:13px;color:#8a8e99;margin-top:6px;">Work Package를 묶는 프로젝트 단계 또는 업무 영역을 관리합니다.</div>
+              </div>
+              <div style="padding:11px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">+ 영역 추가</div>
+            </div>
+            <sc-if value="{{pdHasAreas}}" hint-placeholder-val="{{true}}">
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <sc-for list="{{pd.areas}}" as="ar" hint-placeholder-count="4">
+                  <div style="background:#fff;border:1px solid #ececf0;border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:16px;">
+                    <div style="width:32px;height:32px;border-radius:10px;background:#f2f3f6;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#5a5e69;flex-shrink:0;">{{ar.num}}</div>
+                    <div style="flex:1;">
+                      <div style="font-size:15px;font-weight:700;color:#14161a;">{{ar.title}}</div>
+                      <div style="font-size:12.5px;color:#9296a1;margin-top:4px;">{{ar.desc}}</div>
+                    </div>
+                    <span style="background:{{ar.bg}};color:{{ar.color}};font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0;">{{ar.status}}</span>
+                    <div style="padding:8px 16px;border-radius:14px;border:1px solid #dcdfe6;font-size:12.5px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">수정</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{pdTabMembers}}" hint-placeholder-val="{{false}}">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:#14161a;">Members</div>
+              <div style="font-size:13px;color:#8a8e99;margin-top:6px;">프로젝트 참여 인턴과 역할을 관리합니다.</div>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 16px;font-size:13px;color:#14161a;width:220px;white-space:nowrap;">인턴 선택</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 16px;font-size:13px;color:#14161a;width:220px;white-space:nowrap;">멤버</div>
+              <div style="padding:11px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">멤버 추가</div>
+            </div>
+            <sc-if value="{{pdHasMembers}}" hint-placeholder-val="{{true}}">
+              <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;overflow:hidden;">
+                <sc-for list="{{pd.members}}" as="mb" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:16px;padding:16px 22px;border-bottom:1px solid #f2f3f6;">
+                    <div style="font-size:14px;font-weight:700;color:#14161a;flex:1;">{{mb.name}}</div>
+                    <div style="font-size:13px;color:#8a8e99;white-space:nowrap;">{{mb.role}}</div>
+                    <div style="font-size:13px;color:#22b07d;font-weight:600;white-space:nowrap;">{{mb.status}}</div>
+                    <div style="padding:7px 14px;border-radius:14px;border:1px solid #dcdfe6;font-size:12px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;">상태 변경</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isWorkPackages}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div>
+          <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">WORK</div>
+          <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Work Packages</div>
+          <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">프로젝트·상태·담당자·기한으로 상위 실행 단위를 탐색합니다.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:18px 20px;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr;gap:12px;">
+          <sc-for list="{{wpFilters}}" as="wf" hint-placeholder-count="6">
+            <div style="border:1px solid #dcdfe6;border-radius:10px;padding:10px 14px;font-size:13px;color:#8a8e99;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{wf}}</div>
+          </sc-for>
+        </div>
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;overflow:hidden;">
+          <sc-for list="{{workPackages}}" as="wp" hint-placeholder-count="9">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 90px 70px;align-items:center;padding:18px 22px;border-bottom:1px solid #f2f3f6;">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:#14161a;">{{wp.title}}</div>
+                <div style="font-size:12px;color:#9296a1;margin-top:4px;">{{wp.project}}</div>
+              </div>
+              <div style="font-size:13px;color:#3d4048;">{{wp.who}}</div>
+              <div style="font-size:13px;color:#3d4048;">{{wp.date}}</div>
+              <div><span style="background:{{wp.bg}};color:{{wp.color}};font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{wp.status}}</span></div>
+              <div style="font-size:13px;color:#8a8e99;">{{wp.priority}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isCalendar}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:16px 20px;display:flex;align-items:center;gap:16px;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;color:#8a8e99;margin-bottom:6px;">팀원</div>
+            <div style="border:1px solid #dcdfe6;border-radius:10px;padding:9px 14px;font-size:13px;color:#14161a;width:160px;white-space:nowrap;">전체 팀원</div>
+          </div>
+          <div>
+            <div style="font-size:11.5px;font-weight:700;color:#8a8e99;margin-bottom:6px;">프로젝트</div>
+            <div style="border:1px solid #dcdfe6;border-radius:10px;padding:9px 14px;font-size:13px;color:#14161a;width:200px;white-space:nowrap;">전체 프로젝트</div>
+          </div>
+          <a href="#" style="margin-top:22px;white-space:nowrap;flex-shrink:0;">필터 초기화</a>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:18px 20px;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:22px;margin-bottom:16px;position:relative;">
+              <div style="width:30px;height:30px;border-radius:50%;background:#f2f3f6;display:flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;left:0;">←</div>
+              <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#14161a;">2026년 8월</div>
+              <div style="width:30px;height:30px;border-radius:50%;background:#f2f3f6;display:flex;align-items:center;justify-content:center;cursor:pointer;position:absolute;right:0;">→</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11.5px;font-weight:700;color:#c4c7d0;padding:6px 0;">
+              <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+            </div>
+            <sc-for list="{{calRows}}" as="week" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #f2f3f6;">
+                <sc-for list="{{week}}" as="day" hint-placeholder-count="7">
+                  <div style="min-height:82px;padding:6px;border-right:1px solid #f2f3f6;opacity:{{day.muted}} ? 0.4 : 1;">
+                    <div style="width:20px;height:20px;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;background:{{day.today}} ? '#3b5bff' : 'transparent';color:{{day.today}} ? '#fff' : '#3d4048';">{{day.d}}</div>
+                    <div style="display:flex;flex-direction:column;gap:2px;margin-top:4px;">
+                      <sc-for list="{{day.events}}" as="ev" hint-placeholder-count="0">
+                        <div style="display:flex;align-items:center;gap:4px;font-size:9.5px;color:#5a5e69;overflow:hidden;">
+                          <div style="width:5px;height:5px;border-radius:50%;background:{{ev.c}};flex-shrink:0;"></div>
+                          <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ev.t}}</div>
+                        </div>
+                      </sc-for>
+                      <sc-if value="{{day.extra}}" hint-placeholder-val="{{false}}">
+                        <div style="font-size:9.5px;color:#b3b6c0;">+{{day.extra}}개</div>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:18px 20px;max-height:640px;overflow-y:auto;">
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">MONTHLY</div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:4px;margin-bottom:14px;">
+              <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">8월 일정</div>
+              <div style="font-size:12px;color:#9296a1;">22건</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <sc-for list="{{monthlyEvents}}" as="me" hint-placeholder-count="8">
+                <div style="display:flex;gap:10px;">
+                  <div style="width:6px;height:6px;border-radius:50%;background:{{me.c}};margin-top:6px;flex-shrink:0;"></div>
+                  <div style="flex:1;">
+                    <div style="font-size:11px;font-weight:700;color:#9296a1;">{{me.day}}</div>
+                    <div style="font-size:13px;font-weight:700;color:#14161a;margin-top:2px;">{{me.title}}</div>
+                    <div style="font-size:11.5px;color:#9296a1;margin-top:2px;">{{me.sub}}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDocuments}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">KNOWLEDGE</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Documents</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">파일은 Teams에 보관하고 여기에는 찾기 쉬운 링크만 등록합니다.</div>
+          </div>
+          <div onClick="{{toggleDocForm}}" style="padding:10px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">{{docFormLabel}}</div>
+        </div>
+
+        <sc-if value="{{docFormOpen}}" hint-placeholder-val="{{false}}">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Project *</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">선택</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Work Package</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">연결 안 함</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">제목 *</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;height:20px;"></div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Teams 링크 *</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;">https://</div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">설명</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;height:60px;"></div>
+            </div>
+            <div style="padding:13px 0;border-radius:14px;background:#3b5bff;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;white-space:nowrap;">저장</div>
+          </div>
+        </sc-if>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:14px;padding:12px 16px;font-size:13px;color:#b3b6c0;">제목·설명·URL 검색</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+          <sc-for list="{{docCards}}" as="doc" hint-placeholder-count="1">
+            <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;gap:8px;">
+                <span style="background:#fdf3e6;color:#a66a00;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{doc.tag}}</span>
+                <span style="background:#e0f7e9;color:#1a7f4b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{doc.status}}</span>
+              </div>
+              <div style="font-family:'Sora',sans-serif;font-size:17px;font-weight:700;color:#14161a;line-height:1.35;">{{doc.title}}</div>
+              <div style="font-size:13px;color:#8a8e99;">{{doc.desc}}</div>
+              <div style="font-size:12.5px;color:#b3b6c0;text-decoration:underline;">{{doc.link}}</div>
+              <div style="display:flex;gap:10px;margin-top:6px;">
+                <div style="padding:9px 18px;border-radius:16px;background:#3b5bff;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Teams에서 열기</div>
+                <div style="padding:9px 18px;border-radius:16px;border:1px solid #dcdfe6;color:#3d4048;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">수정</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isPrograms}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">MANAGEMENT</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Programs</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">프로그램과 기수별 참여 관계를 관리합니다.</div>
+          </div>
+          <div style="padding:10px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">+ 프로그램</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+          <sc-for list="{{programCards}}" as="pg" hint-placeholder-count="1">
+            <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="background:#f2f3f6;color:#5a5e69;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{pg.code}}</span>
+                <span style="background:#fdf3e6;color:#a66a00;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{pg.status}}</span>
+              </div>
+              <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#14161a;line-height:1.35;">{{pg.title}}</div>
+              <div style="font-size:13px;color:#6b6f79;line-height:1.55;">{{pg.desc}}</div>
+              <div style="height:1px;background:#f2f3f6;margin-top:4px;"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:12.5px;color:#9296a1;">시작 {{pg.start}}&nbsp;&nbsp;&nbsp;종료 {{pg.end}}</div>
+                <div style="padding:7px 16px;border-radius:16px;border:1px solid #dcdfe6;font-size:12.5px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">수정</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isInterns}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">MANAGEMENT</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Interns</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">인턴 참여 이력과 종료 상태를 관리합니다.</div>
+          </div>
+          <div onClick="{{toggleInternForm}}" style="padding:10px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">{{internFormLabel}}</div>
+        </div>
+
+        <sc-if value="{{internFormOpen}}" hint-placeholder-val="{{false}}">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">새 인턴 등록</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">이름 *</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:20px;"></div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">상태</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">활동 중</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">학교</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:20px;"></div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">전공</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:20px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">기수 / 프로그램</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:20px;"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">시작일</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;">연도-월-일</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">종료일</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;">연도-월-일</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="padding:10px 22px;border-radius:14px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">저장</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1fr 1.3fr 1.3fr 1.6fr 1.2fr 90px 80px;padding:14px 22px;font-size:11.5px;font-weight:700;color:#9296a1;border-bottom:1px solid #f2f3f6;">
+            <div style="white-space:nowrap;">이름</div><div style="white-space:nowrap;">학교 / 전공</div><div style="white-space:nowrap;">기수</div><div style="white-space:nowrap;">참여 기간</div><div style="white-space:nowrap;">연결 계정</div><div style="white-space:nowrap;">상태</div><div style="white-space:nowrap;">관리</div>
+          </div>
+          <sc-for list="{{internRows}}" as="ir" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:1fr 1.3fr 1.3fr 1.6fr 1.2fr 90px 80px;align-items:center;padding:16px 22px;border-bottom:1px solid #f2f3f6;">
+              <div style="font-size:13.5px;font-weight:700;color:#14161a;">{{ir.name}}</div>
+              <div><div style="font-size:13px;font-weight:600;color:#3d4048;">{{ir.school}}</div><div style="font-size:11.5px;color:#9296a1;">{{ir.major}}</div></div>
+              <div style="font-size:13px;color:#3d4048;">{{ir.batch}}</div>
+              <div style="font-size:13px;color:#3d4048;">{{ir.period}}</div>
+              <div style="border:1px solid #dcdfe6;border-radius:8px;padding:7px 10px;font-size:12px;color:#9296a1;white-space:nowrap;">계정 연결 없음</div>
+              <div><span style="background:#fdf3e6;color:#a66a00;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{ir.status}}</span></div>
+              <div style="padding:7px 14px;border-radius:14px;border:1px solid #dcdfe6;font-size:12px;font-weight:600;color:#3d4048;cursor:pointer;text-align:center;white-space:nowrap;flex-shrink:0;">수정</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isInternReviews}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">GROWTH</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Intern Reviews</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">업무 결과뿐 아니라 문제 이해·분석·품질·소통·성장을 함께 평가합니다.</div>
+          </div>
+          <div onClick="{{toggleReviewForm}}" style="padding:10px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">{{reviewFormLabel}}</div>
+        </div>
+
+        <sc-if value="{{reviewFormOpen}}" hint-placeholder-val="{{false}}">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Intern *</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">Jones</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">평가 주기 *</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;">2026 여름 중간</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Program</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">선택 안 함</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Project</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">선택 안 함</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+              <sc-for list="{{reviewCriteria}}" as="rc" hint-placeholder-count="6">
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;white-space:nowrap;">{{rc}}</div>
+                  <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">3</div>
+                </div>
+              </sc-for>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">강점</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:60px;"></div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">개선점</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:60px;"></div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">성장 목표</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:60px;"></div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">상태</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">초안</div>
+            </div>
+            <div style="padding:13px 0;border-radius:14px;background:#3b5bff;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;white-space:nowrap;">초안 저장</div>
+          </div>
+        </sc-if>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:80px 0;text-align:center;font-size:13.5px;color:#b3b6c0;">등록된 평가가 없습니다.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isManagerNotes}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">MANAGEMENT</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Manager Notes</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">프로젝트·인턴·업무의 민감 운영 메모와 후속 조치를 관리합니다.</div>
+          </div>
+          <div onClick="{{toggleNoteForm}}" style="padding:10px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">{{noteFormLabel}}</div>
+        </div>
+
+        <sc-if value="{{noteFormOpen}}" hint-placeholder-val="{{false}}">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Project</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">선택 안 함</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Intern</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">선택 안 함</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">Task</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">선택 안 함</div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">제목 *</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:20px;"></div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">내용 *</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:60px;"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">유형</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">일반</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">상태</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">미해결</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">후속 확인일</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;">연도-월-일</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">해결일</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#b3b6c0;">연도-월-일</div>
+              </div>
+            </div>
+            <div style="padding:13px 0;border-radius:14px;background:#3b5bff;color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;white-space:nowrap;">저장</div>
+          </div>
+        </sc-if>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:18px 20px;display:flex;gap:12px;">
+          <div style="flex:1;border:1px solid #dcdfe6;border-radius:10px;padding:10px 14px;font-size:13px;color:#b3b6c0;">제목·내용 검색</div>
+          <div style="width:160px;border:1px solid #dcdfe6;border-radius:10px;padding:10px 14px;font-size:13px;color:#14161a;white-space:nowrap;">모든 상태</div>
+        </div>
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:80px 0;text-align:center;font-size:13.5px;color:#b3b6c0;">조건에 맞는 관리자 메모가 없습니다.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isUsers}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">MANAGEMENT</div>
+            <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Users</div>
+            <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">사용자를 초대하고 로그인 계정의 권한과 상태를 안전하게 관리합니다.</div>
+          </div>
+          <div onClick="{{toggleUserForm}}" style="padding:10px 18px;border-radius:20px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">{{userFormLabel}}</div>
+        </div>
+
+        <sc-if value="{{userFormOpen}}" hint-placeholder-val="{{false}}">
+          <div style="background:#fff;border:1px solid #ececf0;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div style="font-family:'Sora',sans-serif;font-size:16px;font-weight:700;color:#14161a;">새 사용자 초대</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">이메일 *</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:20px;"></div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">표시 이름 *</div>
+                <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;height:20px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#14161a;margin-bottom:8px;">초기 역할</div>
+              <div style="border:1px solid #dcdfe6;border-radius:10px;padding:11px 14px;font-size:13px;color:#14161a;">조회자</div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="padding:10px 22px;border-radius:14px;background:#3b5bff;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">초대 메일 발송</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.6fr 1.2fr 1fr 90px 1.8fr;padding:14px 22px;font-size:11.5px;font-weight:700;color:#9296a1;border-bottom:1px solid #f2f3f6;">
+            <div style="white-space:nowrap;">이메일</div><div style="white-space:nowrap;">표시 이름</div><div style="white-space:nowrap;">역할</div><div style="white-space:nowrap;">상태</div><div style="white-space:nowrap;">관리</div>
+          </div>
+          <sc-for list="{{userRows}}" as="u" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:1.6fr 1.2fr 1fr 90px 1.8fr;align-items:center;padding:16px 22px;border-bottom:1px solid #f2f3f6;">
+              <div style="font-size:13.5px;color:#14161a;">{{u.email}}</div>
+              <div style="border:1px solid #dcdfe6;border-radius:8px;padding:8px 12px;font-size:13px;color:#14161a;">{{u.name}}</div>
+              <div style="border:1px solid #dcdfe6;border-radius:8px;padding:8px 12px;font-size:13px;color:#14161a;width:fit-content;white-space:nowrap;">{{u.role}}</div>
+              <div><span style="background:#e0f7e9;color:#1a7f4b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap;">{{u.status}}</span></div>
+              <div style="display:flex;gap:8px;">
+                <a href="#" style="white-space:nowrap;flex-shrink:0;">저장</a>
+                <div style="padding:6px 12px;border-radius:12px;border:1px solid #dcdfe6;font-size:11.5px;font-weight:600;color:#3d4048;cursor:pointer;white-space:nowrap;flex-shrink:0;">비밀번호 재설정</div>
+                <div style="padding:6px 12px;border-radius:12px;border:1px solid #f0a3a3;font-size:11.5px;font-weight:600;color:#c23434;cursor:pointer;white-space:nowrap;flex-shrink:0;">계정 종료</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isAuditLogs}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div>
+          <div style="font-size:11.5px;font-weight:700;letter-spacing:0.08em;color:#3b5bff;">OPERATIONS</div>
+          <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:26px;color:#14161a;margin-top:6px;">Audit Logs</div>
+          <div style="font-size:13.5px;color:#8a8e99;margin-top:8px;">주요 데이터의 생성·수정·삭제 사실과 변경 필드를 확인합니다.</div>
+        </div>
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;padding:18px 20px;display:flex;gap:12px;">
+          <div style="flex:1;border:1px solid #dcdfe6;border-radius:10px;padding:10px 14px;font-size:13px;color:#b3b6c0;">행 ID·작업자·필드 검색</div>
+          <div style="width:160px;border:1px solid #dcdfe6;border-radius:10px;padding:10px 14px;font-size:13px;color:#14161a;white-space:nowrap;">모든 엔티티</div>
+        </div>
+        <div style="background:#fff;border:1px solid #ececf0;border-radius:18px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.4fr 1.6fr 90px 90px 2fr;padding:14px 22px;font-size:11.5px;font-weight:700;color:#9296a1;border-bottom:1px solid #f2f3f6;background:#f7f8fb;">
+            <div style="white-space:nowrap;">시각</div><div style="white-space:nowrap;">대상</div><div style="white-space:nowrap;">작업</div><div style="white-space:nowrap;">작업자</div><div style="white-space:nowrap;">변경 필드</div>
+          </div>
+          <sc-for list="{{auditRows}}" as="a" hint-placeholder-count="10">
+            <div style="display:grid;grid-template-columns:1.4fr 1.6fr 90px 90px 2fr;padding:14px 22px;border-bottom:1px solid #f2f3f6;font-size:12.5px;color:#3d4048;">
+              <div>{{a.time}}</div>
+              <div><div style="font-weight:700;color:#14161a;">{{a.target}}</div><div style="font-size:10.5px;color:#b3b6c0;">{{a.id}}</div></div>
+              <div>{{a.action}}</div>
+              <div>{{a.actor}}</div>
+              <div style="color:#6b6f79;">{{a.fields}}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isOther}}" hint-placeholder-val="{{false}}">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:120px 0;">
+        <div style="font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:#8a8e99;">{{otherLabel}} 화면 준비 중입니다.</div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = {
+    screen: 'dashboard',
+    settingsOpen: false,
+    metrics: [
+      { key: 'total', label: '전체 업무', checked: true },
+      { key: 'inprogress', label: '진행 중', checked: true },
+      { key: 'rate', label: '완료율', checked: true },
+      { key: 'duesoon', label: '마감 임박', checked: true },
+      { key: 'activeproject', label: '활성 Project', checked: false },
+      { key: 'activeprogram', label: '활성 Program', checked: false },
+      { key: 'activeintern', label: '활동 Intern', checked: false },
+      { key: 'delayed', label: '지연 업무', checked: false },
+      { key: 'unassigned', label: '미배정 업무', checked: false },
+      { key: 'pendingreview', label: '검토 대기', checked: false },
+      { key: 'docs', label: '등록 Documents', checked: false },
+      { key: 'notes', label: '미해결 Manager Note', checked: false },
+      { key: 'reviews', label: '확정 평가', checked: false },
+    ],
+    order: ['total', 'inprogress', 'rate', 'duesoon'],
+    selectedProject: 'PDC-2026-01',
+    projectTab: 'overview',
+    reviewGate: 'REVISE',
+    docFormOpen: false,
+    internFormOpen: false,
+    reviewFormOpen: false,
+    noteFormOpen: false,
+    userFormOpen: false,
+    searchSettingsOpen: false,
+    scopes: [
+      { key: 'projects', label: 'Projects', checked: true },
+      { key: 'projectareas', label: 'Project Areas', checked: false },
+      { key: 'workpackages', label: 'Work Packages', checked: true },
+      { key: 'programs', label: 'Programs', checked: false },
+      { key: 'interns', label: 'Interns', checked: false },
+      { key: 'documents', label: 'Documents', checked: true },
+      { key: 'managernotes', label: 'Manager Notes', checked: false },
+    ],
+  };
+
+  go(key) { return () => this.setState({ screen: key }); }
+
+  toggleSettings() { this.setState(s => ({ settingsOpen: !s.settingsOpen })); }
+
+  toggleSearchSettings() { this.setState(s => ({ searchSettingsOpen: !s.searchSettingsOpen })); }
+
+  openProject(code) { return () => this.setState({ screen: 'projectdetail', selectedProject: code, projectTab: 'overview' }); }
+  setProjectTab(key) { return () => this.setState({ projectTab: key }); }
+  setReviewGate(v) { return () => this.setState({ reviewGate: v }); }
+  toggleDocForm() { this.setState(s => ({ docFormOpen: !s.docFormOpen })); }
+  toggleInternForm() { this.setState(s => ({ internFormOpen: !s.internFormOpen })); }
+  toggleReviewForm() { this.setState(s => ({ reviewFormOpen: !s.reviewFormOpen })); }
+  toggleNoteForm() { this.setState(s => ({ noteFormOpen: !s.noteFormOpen })); }
+  toggleUserForm() { this.setState(s => ({ userFormOpen: !s.userFormOpen })); }
+
+  buildProjectDetail() {
+    const projects = {
+      'PDC-2026-01': {
+        code: 'PDC-2026-01', tag: 'EXPLORE', status: '진행 중',
+        title: '공공 데이터 분석 서비스 화면 카탈로그 제작',
+        desc: '공공 데이터 분석 서비스에 활용할 수 있는 대시보드, 지도, 차트, 검색 및 필터 화면 사례를 조사하고 카탈로그로 정리한다.',
+        period: '2026-07-28 — 2026-12-31',
+        workstreams: [
+          { name: '데이터 및 서비스 조사', items: [
+            { title: '공공 데이터 제공 기관 조사', desc: '등록된 설명이 없습니다.', status: '완료', color: '#1a7f4b', bg: '#e0f7e9', area: '데이터 및 서비스 조사', who: 'Kai', priority: '보통', due: '2026-07-31' },
+            { title: '활용 후보 데이터셋 20개 수집', desc: '등록된 설명이 없습니다.', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', area: '데이터 및 서비스 조사', who: 'Kai, Jackson', priority: '보통', due: '2026-08-12' },
+            { title: '공공 데이터 분석 서비스 사례 조사', desc: '등록된 설명이 없습니다.', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', area: '데이터 및 서비스 조사', who: 'Kai, Jackson', priority: '보통', due: '2026-08-07' },
+          ]},
+        ],
+        areas: [
+          { num: 1, title: '데이터 및 서비스 조사', desc: '공공 데이터와 관련 분석 서비스 사례를 조사한다.', status: '진행 중', color: '#a66a00', bg: '#fdf3e6' },
+          { num: 2, title: '화면 유형 정의', desc: '분석 서비스의 주요 화면과 컴포넌트를 분류한다.', status: '기획', color: '#5a5e69', bg: '#f2f3f6' },
+          { num: 3, title: '카탈로그 제작', desc: '유형별 화면 사례와 활용 기준을 문서화한다.', status: '기획', color: '#5a5e69', bg: '#f2f3f6' },
+          { num: 4, title: '품질 검토', desc: '화면 구성과 설명의 일관성을 검토하고 최종본을 제작한다.', status: '기획', color: '#5a5e69', bg: '#f2f3f6' },
+        ],
+        members: [
+          { name: 'Kai', role: '멤버', status: '활성' },
+          { name: 'Jackson', role: '멤버', status: '활성' },
+        ],
+        documents: [],
+      },
+      'VAI-2026-01': {
+        code: 'VAI-2026-01', tag: 'EXPLORE', status: '진행 중',
+        title: '영상·AI 융합 기술 아이템 기획',
+        desc: '영상 분석 및 생성형 AI 기술을 활용해 사업화 가능한 서비스 아이템을 발굴하고 핵심 기능과 적용 가능성을 검토한다.',
+        period: '2026-07-07 — 2026-08-31',
+        workstreams: [
+          { name: '시장 및 기술 조사', items: [
+            { title: '영상 AI 기술 동향 조사', desc: '등록된 설명이 없습니다.', status: '완료', color: '#1a7f4b', bg: '#e0f7e9', area: '시장 및 기술 조사', who: 'Jones, Kai', priority: '낮음', due: '2026-07-24' },
+            { title: '국내외 경쟁 서비스 조사', desc: '등록된 설명이 없습니다.', status: '완료', color: '#1a7f4b', bg: '#e0f7e9', area: '시장 및 기술 조사', who: 'Jones, Kai', priority: '낮음', due: '2026-07-24' },
+          ]},
+          { name: '아이템 발굴', items: [
+            { title: '사용자 문제 및 요구사항 정의', desc: '등록된 설명이 없습니다.', status: '진행 중', color: '#a66a00', bg: '#fdf3e6', area: '아이템 발굴', who: 'Jones', priority: '보통', due: '2026-08-21' },
+            { title: '기술 아이템 후보 5개 도출', desc: '등록된 설명이 없습니다.', status: '진행 중', color: '#a66a00', bg: '#fdf3e6', area: '아이템 발굴', who: 'Jones', priority: '보통', due: '2026-08-21' },
+          ]},
+        ],
+        areas: [],
+        members: [],
+        documents: [
+          { tag: '영상·AI 융합 기술 아이템 기획', status: '사용 중', title: '260806_Jones_AI 영상 시나리오 발표 초안', desc: 'Edge AI 시나리오', link: '최종 아이템 서비스 흐름 작성' },
+        ],
+      },
+    };
+    const p = projects[this.state.selectedProject] || projects['PDC-2026-01'];
+    const tabs = [
+      { key: 'overview', label: 'Overview' },
+      { key: 'workpackages', label: 'Work Packages' },
+      { key: 'documents', label: 'Documents' },
+      { key: 'review', label: 'Review' },
+      { key: 'areas', label: 'Project Areas' },
+      { key: 'members', label: 'Members' },
+    ].map(t => ({ ...t, active: t.key === this.state.projectTab, onClick: this.setProjectTab(t.key) }));
+
+    const gateOptions = [
+      { key: 'REVISE', label: 'REVISE', desc: '가능성이 있지만 보완이 필요합니다.' },
+      { key: 'KEEP', label: 'KEEP', desc: '참고 자료로 보관합니다.' },
+      { key: 'ASSET', label: 'ASSET', desc: 'BX 사업자산으로 활용할 수 있습니다.' },
+      { key: 'DROP', label: 'DROP', desc: '추가 진행을 중단하고 사유를 남깁니다.' },
+    ].map(o => ({ ...o, selected: o.key === this.state.reviewGate, onSelect: this.setReviewGate(o.key) }));
+
+    return {
+      pd: p,
+      pdTabs: tabs,
+      pdTabOverview: this.state.projectTab === 'overview',
+      pdTabWorkPackages: this.state.projectTab === 'workpackages',
+      pdTabDocuments: this.state.projectTab === 'documents',
+      pdTabReview: this.state.projectTab === 'review',
+      pdTabAreas: this.state.projectTab === 'areas',
+      pdTabMembers: this.state.projectTab === 'members',
+      pdHasWorkPackages: p.workstreams.length > 0,
+      pdHasAreas: p.areas.length > 0,
+      pdHasMembers: p.members.length > 0,
+      pdHasDocuments: p.documents.length > 0,
+      pdHasNoDocuments: p.documents.length === 0,
+      gateOptions,
+    };
+  }
+
+  toggleScope(key) {
+    return () => this.setState(s => ({ scopes: s.scopes.map(sc => sc.key === key ? { ...sc, checked: !sc.checked } : sc) }));
+  }
+
+  toggleMetric(key) {
+    return () => this.setState(s => {
+      const metrics = s.metrics.map(m => m.key === key ? { ...m, checked: !m.checked } : m);
+      const nowChecked = metrics.find(m => m.key === key).checked;
+      let order = s.order.slice();
+      if (nowChecked) { if (!order.includes(key)) order.push(key); }
+      else { order = order.filter(k => k !== key); }
+      return { metrics, order };
+    });
+  }
+
+  moveOrder(key, dir) {
+    return () => this.setState(s => {
+      const order = s.order.slice();
+      const i = order.indexOf(key);
+      const j = i + dir;
+      if (j < 0 || j >= order.length) return {};
+      [order[i], order[j]] = [order[j], order[i]];
+      return { order };
+    });
+  }
+
+  renderVals() {
+    const activeBg = '#3b5bff';
+    const built = ['dashboard', 'search', 'reports', 'projects', 'projectdetail', 'workpackages', 'calendar', 'documents', 'programs', 'interns', 'internreviews', 'managernotes', 'users', 'auditlogs'];
+    const mkGroups = (groups) => groups.map(g => ({
+      ...g,
+      items: g.items.map(it => ({
+        ...it,
+        textColor: it.key === this.state.screen ? '#fff' : '#5a5e69',
+        bg: it.key === this.state.screen ? activeBg : 'transparent',
+        onClick: this.go(it.key),
+      })),
+    }));
+
+    return {
+      settingsOpen: this.state.settingsOpen,
+      toggleSettings: () => this.toggleSettings(),
+      settingsLabel: this.state.settingsOpen ? '설정 닫기' : '지표 설정',
+      metricGrid: this.state.metrics.map(m => ({ ...m, onToggle: this.toggleMetric(m.key), checkMark: m.checked ? '✓' : '' })),
+      orderList: this.state.order.map((key, i) => {
+        const m = this.state.metrics.find(x => x.key === key);
+        return { key, num: i + 1, label: m.label, onUp: this.moveOrder(key, -1), onDown: this.moveOrder(key, 1) };
+      }),
+      searchSettingsOpen: this.state.searchSettingsOpen,
+      toggleSearchSettings: () => this.toggleSearchSettings(),
+      searchSettingsLabel: this.state.searchSettingsOpen ? '설정 닫기' : '검색 범위 설정',
+      scopeGrid: this.state.scopes.map(sc => ({ ...sc, onToggle: this.toggleScope(sc.key), checkMark: sc.checked ? '✓' : '' })),
+      isDashboard: this.state.screen === 'dashboard',
+      isSearch: this.state.screen === 'search',
+      isReports: this.state.screen === 'reports',
+      isProjects: this.state.screen === 'projects',
+      isProjectDetail: this.state.screen === 'projectdetail',
+      backToProjects: () => this.setState({ screen: 'projects' }),
+      isWorkPackages: this.state.screen === 'workpackages',
+      isCalendar: this.state.screen === 'calendar',
+      isDocuments: this.state.screen === 'documents',
+      docFormOpen: this.state.docFormOpen,
+      toggleDocForm: () => this.toggleDocForm(),
+      docFormLabel: this.state.docFormOpen ? '취소' : '+ 문서 링크',
+      isPrograms: this.state.screen === 'programs',
+      isInterns: this.state.screen === 'interns',
+      internFormOpen: this.state.internFormOpen,
+      toggleInternForm: () => this.toggleInternForm(),
+      internFormLabel: this.state.internFormOpen ? '취소' : '+ 인턴 등록',
+      isInternReviews: this.state.screen === 'internreviews',
+      reviewFormOpen: this.state.reviewFormOpen,
+      toggleReviewForm: () => this.toggleReviewForm(),
+      reviewFormLabel: this.state.reviewFormOpen ? '취소' : '+ 평가',
+      reviewCriteria: ['문제 이해', '조사·분석', '업무 품질', '커뮤니케이션', '피드백 반영', '주도성·성장'],
+      isManagerNotes: this.state.screen === 'managernotes',
+      noteFormOpen: this.state.noteFormOpen,
+      toggleNoteForm: () => this.toggleNoteForm(),
+      noteFormLabel: this.state.noteFormOpen ? '취소' : '+ 메모',
+      isUsers: this.state.screen === 'users',
+      userFormOpen: this.state.userFormOpen,
+      toggleUserForm: () => this.toggleUserForm(),
+      userFormLabel: this.state.userFormOpen ? '취소' : '+ 사용자 초대',
+      isAuditLogs: this.state.screen === 'auditlogs',
+      isOther: !built.includes(this.state.screen),
+      otherLabel: this.state.screen,
+
+      navGroups: mkGroups([
+        { label: null, items: [
+          { name: 'Dashboard', key: 'dashboard' },
+          { name: 'Global Search', key: 'search' },
+          { name: 'Reports', key: 'reports' },
+        ]},
+        { label: 'CONTROL TOWER', items: [
+          { name: 'Projects', key: 'projects' },
+          { name: 'Work Packages', key: 'workpackages' },
+          { name: 'Calendar', key: 'calendar' },
+        ]},
+        { label: 'KNOWLEDGE', items: [
+          { name: 'Documents', key: 'documents' },
+        ]},
+        { label: 'OPERATIONS', items: [
+          { name: 'Programs', key: 'programs' },
+          { name: 'Interns', key: 'interns' },
+          { name: 'Intern Reviews', key: 'internreviews' },
+          { name: 'Manager Notes', key: 'managernotes' },
+        ]},
+        { label: 'SYSTEM', items: [
+          { name: 'Users', key: 'users' },
+          { name: 'Audit Logs', key: 'auditlogs' },
+        ]},
+      ]),
+
+      statCards: [
+        { label: '진행 중', value: '2건', sub: '이번 주 0건 진행', dot: '#f0a63a', subColor: '#c9862c' },
+        { label: '완료율', value: '18%', sub: '전체 업무 완료 기준', dot: '#22b07d', subColor: '#22b07d' },
+        { label: '마감 임박', value: '3건', sub: '4건 지연', dot: '#ef5b5b', subColor: '#ef5b5b' },
+      ],
+      portfolio: [
+        { label: 'EXPLORE', value: '2개', sub: '아이디어 탐색·검증', dot: '#3b5bff' },
+        { label: 'BUILD', value: '0개', sub: 'BX Asset 고도화', dot: '#22b07d' },
+        { label: 'Review / Revision', value: '0 / 0', sub: '검토 / 수정 중', dot: '#f0a63a' },
+        { label: '지연 Project', value: '0개', sub: '목표 종료일 초과', dot: '#ef5b5b' },
+      ],
+      weekly: [
+        { label: '완일', dot: '#3b5bff', count: 5, pct: '62%' },
+        { label: '진행 중', dot: '#f0a63a', count: 0, pct: '0%' },
+        { label: '검토', dot: '#8b7bf7', count: 0, pct: '0%' },
+        { label: '완료', dot: '#22b07d', count: 0, pct: '0%' },
+      ],
+      team: [
+        { name: 'Jackson', initial: 'J', color: '#3b5bff', count: 8, pct: '90%' },
+        { name: 'Kai', initial: 'K', color: '#22b07d', count: 7, pct: '78%' },
+        { name: 'Jones', initial: 'J', color: '#f0a63a', count: 6, pct: '67%' },
+      ],
+      todos: [
+        { title: '공공 데이터 제공 기관 조사', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작 · Kai', status: '완료', doneColor: '#1a7f4b', doneBg: '#e0f7e9' },
+        { title: '기술 적용 가능성 검토서 작성', sub: '영상·AI 융합 기술 아이템 기획 · Jones', status: '할 일', doneColor: '#8a8e99', doneBg: '#f2f3f6' },
+        { title: '분석 서비스 화면 유형 분류', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작 · Jackson', status: '할 일', doneColor: '#8a8e99', doneBg: '#f2f3f6' },
+        { title: '카탈로그 디자인 및 설명 통일', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작 · Kai, Jackson', status: '할 일', doneColor: '#8a8e99', doneBg: '#f2f3f6' },
+        { title: '공공 데이터 분석 서비스 사례 조사', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작 · Kai, Jackson', status: '할 일', doneColor: '#8a8e99', doneBg: '#f2f3f6' },
+      ],
+      deadlines: [
+        { title: '공공 데이터 분석 서비스 사례 조사', who: 'Kai, Jackson', tag: 'D+4', bar: '#ef5b5b', bg: '#fdeeee' },
+        { title: '기술 아이템 후보 5개 도출', who: 'Jones', tag: 'D+4', bar: '#ef5b5b', bg: '#fdeeee' },
+        { title: '사용자 문제 및 요구사항 정의', who: 'Jones', tag: 'D+4', bar: '#ef5b5b', bg: '#fdeeee' },
+        { title: '영상 데이터셋 및 API 조사', who: 'Jones', tag: 'D+4', bar: '#ef5b5b', bg: '#fdeeee' },
+        { title: '분석 서비스 화면 유형 분류', who: 'Jackson', tag: 'D-1', bar: '#f0a63a', bg: '#fdf3e6' },
+        { title: '활용 후보 데이터셋 20개 수집', who: 'Kai, Jackson', tag: 'D-1', bar: '#f0a63a', bg: '#fdf3e6' },
+        { title: '최종 아이템 서비스 흐름 작성', who: 'Jones', tag: 'D-3', bar: '#3b5bff', bg: '#ecf0ff' },
+      ],
+
+      reportFilters: [
+        { label: '보고서', value: '프로젝트 진행 보고서' },
+        { label: '시작일', value: '2026-08-10' },
+        { label: '종료일', value: '2026-08-15' },
+        { label: 'Project', value: '전체' },
+        { label: 'Intern', value: '전체' },
+      ],
+      reportRows: [
+        { code: 'VAI-2026-01', name: '영상·AI 융합 기술 아이템 기획', status: 'ACTIVE', start: '2026-07-07', due: '2026-08-31', total: 1, inprogress: 0, review: 0, done: 0, delayed: 0, rate: 0 },
+        { code: 'PDC-2026-01', name: '공공 데이터 분석 서비스 화면 카탈로그 제작', status: 'ACTIVE', start: '2026-07-28', due: '2026-12-31', total: 4, inprogress: 0, review: 0, done: 0, delayed: 0, rate: 0 },
+      ],
+
+      projectFilters: ['모든 유형', '모든 상태', '모든 분야'],
+      projectCards: [
+        { code: 'PDC-2026-01', tag: 'EXPLORE', status: '진행 중', title: '공공 데이터 분석 서비스 화면 카탈로그 제작', desc: '공공 데이터 분석 서비스에 활용할 수 있는 대시보드, 지도, 차트, 검색 및 필터 화면 사례를 조사하고 카탈로그로 정리한다.', onOpen: this.openProject('PDC-2026-01') },
+        { code: 'VAI-2026-01', tag: 'EXPLORE', status: '진행 중', title: '영상·AI 융합 기술 아이템 기획', desc: '영상 분석 및 생성형 AI 기술을 활용해 사업화 가능한 서비스 아이템을 발굴하고 핵심 기능과 적용 가능성을 검토한다.', onOpen: this.openProject('VAI-2026-01') },
+      ],
+
+      ...this.buildProjectDetail(),
+
+      wpFilters: ['제목 또는 설명 검색', '모든 프로젝트', '모든 상태', '모든 담당자', '연도-월-일', '연도-월-일'],
+      workPackages: [
+        { title: '공공 데이터 제공 기관 조사', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Kai', date: '2026-07-31', status: '완료', color: '#1a7f4b', bg: '#e0f7e9', priority: '보통' },
+        { title: '기술 적용 가능성 검토서 작성', project: '영상·AI 융합 기술 아이템 기획', who: 'Jones', date: '2026-08-21', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+        { title: '분석 서비스 화면 유형 분류', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Jackson', date: '2026-08-12', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+        { title: '카탈로그 디자인 및 설명 통일', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Kai, Jackson', date: '2026-09-04', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+        { title: '공공 데이터 분석 서비스 사례 조사', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Kai, Jackson', date: '2026-08-07', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+        { title: '활용 후보 데이터셋 20개 수집', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Kai, Jackson', date: '2026-08-12', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+        { title: '최종 카탈로그 검토', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Kai, Jackson', date: '2026-09-11', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+        { title: '검색 및 필터 화면 카탈로그 작성', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Kai, Jackson', date: '2026-08-28', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+        { title: '통계 차트 화면 카탈로그 작성', project: '공공 데이터 분석 서비스 화면 카탈로그 제작', who: 'Kai, Jackson', date: '2026-08-26', status: '할 일', color: '#8a8e99', bg: '#f2f3f6', priority: '보통' },
+      ],
+
+      calRows: [
+        [
+          { d: 26, muted: true, events: [] },
+          { d: 27, muted: false, events: [{c:'#22b07d',t:'공공 데이터 제공 기관 조사'},{c:'#22b07d',t:'공공 데이터 분석 서비스 사례 조사'},{c:'#f0a63a',t:'기술 아이템 후보 5개 도출'}], extra: 2 },
+          { d: 28, muted: false, events: [{c:'#22b07d',t:'공공 데이터 분석 서비스 사례 조사'}] },
+          { d: 29, muted: false, events: [] },
+          { d: 30, muted: false, events: [] },
+          { d: 31, muted: false, events: [{c:'#22b07d',t:'공공 데이터 제공 기관 조사'}] },
+          { d: 1, muted: false, events: [] },
+        ],
+        [
+          { d: 2, muted: false, events: [] },
+          { d: 3, muted: false, events: [] },
+          { d: 4, muted: false, events: [] },
+          { d: 5, muted: false, events: [{c:'#22b07d',t:'분석 서비스 화면 유형 분류 시작'},{c:'#f0a63a',t:'활용 후보 데이터셋 20개 수집 시작'}] },
+          { d: 6, muted: false, events: [] },
+          { d: 7, muted: false, events: [{c:'#22b07d',t:'공공 데이터 분석 서비스 사례 조사 마감'},{c:'#f0a63a',t:'기술 아이템 후보 5개 도출 마감'},{c:'#f0a63a',t:'사용자 문제 및 요구사항 정의 마감'}], extra: 1 },
+          { d: 8, muted: false, events: [] },
+        ],
+        [
+          { d: 9, muted: false, events: [] },
+          { d: 10, muted: false, events: [{c:'#22b07d',t:'최종 아이템 서비스 흐름 작성 시작'}] },
+          { d: 11, muted: false, today: true, events: [] },
+          { d: 12, muted: false, events: [{c:'#22b07d',t:'분석 서비스 화면 유형 분류 마감'},{c:'#f0a63a',t:'활용 후보 데이터셋 20개 수집 마감'},{c:'#f0a63a',t:'통계 차트 화면 카탈로그 작성'}], extra: 1 },
+          { d: 13, muted: false, events: [] },
+          { d: 14, muted: false, events: [{c:'#22b07d',t:'최종 아이템 서비스 흐름 마감'}] },
+          { d: 15, muted: false, events: [] },
+        ],
+        [
+          { d: 16, muted: false, events: [] },
+          { d: 17, muted: false, events: [{c:'#f0a63a',t:'기술 적용 가능성 검토서 마감'},{c:'#8b7bf7',t:'최종 기술 아이템 발표'}] },
+          { d: 18, muted: false, events: [] },
+          { d: 19, muted: false, events: [{c:'#f0a63a',t:'지도 기반 분석 화면 카탈로그 작성'}] },
+          { d: 20, muted: false, events: [] },
+          { d: 21, muted: false, events: [{c:'#f0a63a',t:'기술 적용 가능성 검토서 마감'},{c:'#8b7bf7',t:'최종 기술 아이템 발표'}] },
+          { d: 22, muted: false, events: [] },
+        ],
+        [
+          { d: 23, muted: false, events: [] },
+          { d: 24, muted: false, events: [{c:'#f0a63a',t:'검색 및 필터 화면 카탈로그 작성'}] },
+          { d: 25, muted: false, events: [] },
+          { d: 26, muted: false, events: [{c:'#f0a63a',t:'통계 차트 화면 카탈로그 작성'}] },
+          { d: 27, muted: false, events: [] },
+          { d: 28, muted: false, events: [{c:'#f0a63a',t:'검색 및 필터 화면 카탈로그 작성'}] },
+          { d: 29, muted: false, events: [] },
+        ],
+        [
+          { d: 30, muted: false, events: [] },
+          { d: 31, muted: false, events: [{c:'#8b7bf7',t:'영상·AI 융합 기술 아이템 기획'},{c:'#f0a63a',t:'카탈로그 디자인 및 설명 통일'}] },
+          { d: 1, muted: true, events: [] },
+          { d: 2, muted: true, events: [] },
+          { d: 3, muted: true, events: [] },
+          { d: 4, muted: true, events: [] },
+          { d: 5, muted: true, events: [] },
+        ],
+      ],
+      monthlyEvents: [
+        { day: '5일', title: '분석 서비스 화면 유형 분류 시작', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작', c: '#22b07d' },
+        { day: '5일', title: '활용 후보 데이터셋 20개 수집 시작', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작', c: '#f0a63a' },
+        { day: '7일', title: '공공 데이터 분석 서비스 사례 조사 마감', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작', c: '#22b07d' },
+        { day: '7일', title: '기술 아이템 후보 5개 도출 마감', sub: '영상·AI 융합 기술 아이템 기획', c: '#f0a63a' },
+        { day: '7일', title: '사용자 문제 및 요구사항 정의 마감', sub: '영상·AI 융합 기술 아이템 기획', c: '#f0a63a' },
+        { day: '7일', title: '영상 데이터셋 및 API 조사 마감', sub: '영상·AI 융합 기술 아이템 기획', c: '#f0a63a' },
+        { day: '10일', title: '최종 아이템 서비스 흐름 작성 시작', sub: '영상·AI 융합 기술 아이템 기획', c: '#22b07d' },
+        { day: '12일', title: '분석 서비스 화면 유형 분류 마감', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작', c: '#22b07d' },
+        { day: '12일', title: '활용 후보 데이터셋 20개 수집 마감', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작', c: '#f0a63a' },
+        { day: '12일', title: '통계 차트 화면 카탈로그 작성 시작', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작', c: '#f0a63a' },
+        { day: '12일', title: '지도 기반 분석 화면 카탈로그 작성 시작', sub: '공공 데이터 분석 서비스 화면 카탈로그 제작', c: '#f0a63a' },
+        { day: '14일', title: '최종 아이템 서비스 흐름 마감', sub: '영상·AI 융합 기술 아이템 기획', c: '#22b07d' },
+      ],
+
+      docCards: [
+        { tag: '영상·AI 융합 기술 아이템 기획', status: '사용 중', title: '260806_Jones_AI 영상 시나리오 발표 초안', desc: 'Edge AI 시나리오', link: '최종 아이템 서비스 흐름 작성' },
+      ],
+
+      programCards: [
+        { code: 'INT-2026-02', status: '진행 중', title: '2026 하계 AI·데이터 서비스 기획 인턴십', desc: '영상과 AI를 결합한 기술 아이템 기획 및 공공 데이터 분석 서비스 화면 카탈로그 제작을 수행하는 인턴 프로그램', start: '2026-07-07', end: '2026-12-31' },
+      ],
+
+      internRows: [
+        { name: 'Jackson', school: '중앙대학교', major: '통계학과', batch: '사내 인턴 프로그램', period: '2026-08-03 ~ 2026-10-31', status: '활동 중' },
+        { name: 'Kai', school: '세종대학교', major: '컴퓨터공학과', batch: '2026 하계', period: '2026-07-07 ~ 2026-08-31', status: '활동 중' },
+        { name: 'Jones', school: '세종대학교', major: '전자정보통신공학과', batch: '2026 하계 + 2026 2학기', period: '2026-07-07 ~ 2026-12-21', status: '활동 중' },
+      ],
+
+      userRows: [
+        { email: 'seonu.cho@dtonic.io', name: 'Esther', role: '관리자', status: '활성' },
+        { email: 'test@dtonic.io', name: '관리자', role: '관리자', status: '활성' },
+      ],
+
+      auditRows: [
+        { time: '2026. 8. 11. 오후 2:25:34', target: 'resources', id: '56ff71d3-f3ee-4e27-884c-c615109b1cd7', action: '생성', actor: 'Esther', fields: 'description, id, project_id, resource_type, status, task_id, title, url' },
+        { time: '2026. 8. 5. 오후 3:00:18', target: 'auth_user', id: 'ba12035f-dc14-405e-82e0-6788414a3bd3', action: '계정 초대', actor: '관리자', fields: 'email, display_name, global_role' },
+        { time: '2026. 8. 5. 오후 3:00:17', target: 'profiles', id: 'ba12035f-dc14-405e-82e0-6788414a3bd3', action: '수정', actor: '시스템', fields: 'global_role' },
+        { time: '2026. 8. 5. 오후 1:13:33', target: 'projects', id: 'eeed141c-23b2-43ff-af09-380aec73ee87', action: '삭제', actor: '관리자', fields: '-' },
+        { time: '2026. 8. 5. 오후 1:13:29', target: 'workstreams', id: '6632030a-75e7-4091-ba4a-8403aa2fe93e', action: '삭제', actor: '관리자', fields: '-' },
+        { time: '2026. 8. 5. 오후 1:13:26', target: 'workstreams', id: '967e739d-fcf3-4ef4-830a-011f594bdb6b', action: '삭제', actor: '관리자', fields: '-' },
+        { time: '2026. 8. 5. 오후 1:13:23', target: 'tasks', id: '8077616a-8634-49a4-a3b1-6d5b3db3ca72', action: '삭제', actor: '관리자', fields: '-' },
+        { time: '2026. 8. 5. 오후 1:12:54', target: 'tasks', id: '8077616a-8634-49a4-a3b1-6d5b3db3ca72', action: '수정', actor: '관리자', fields: 'due_date' },
+        { time: '2026. 8. 5. 오후 1:12:35', target: 'tasks', id: 'ea4a713e-e991-44c7-81d6-305b96036af7', action: '수정', actor: '관리자', fields: 'status' },
+        { time: '2026. 8. 4. 오후 7:44:59', target: 'projects', id: 'f3db929b-af4d-43e3-8377-93b8004011b7', action: '삭제', actor: '관리자', fields: '-' },
+      ],
+    };
+  }
+}
+
+</script>
+</body>
+</html>

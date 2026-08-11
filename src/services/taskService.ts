@@ -297,6 +297,15 @@ export async function getTasks(
   );
 }
 
+export async function getAllTasks(): Promise<Task[]> {
+  const { data, error } = await supabase.from("tasks").select(taskColumns)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(`Task 목록 조회 실패: ${error.message}`);
+  const rows = (data ?? []) as TaskRow[];
+  const maps = await getAssigneeMaps(rows.map((task) => task.id));
+  return rows.map((row) => mapTask(row, maps));
+}
+
 /**
  * ID로 Task 한 건을 조회한다.
  */
@@ -330,7 +339,7 @@ export async function createTask(
   input: CreateTaskInput
 ): Promise<Task> {
   const { data, error } = await supabase.rpc(
-    "create_task_with_assignee",
+    "create_task_with_assignees",
     {
       p_project_id: input.projectId,
       p_workstream_id: input.workstreamId,
@@ -346,8 +355,8 @@ export async function createTask(
       p_due_date: input.dueDate,
 
       p_sort_order: input.order,
-      p_assignee_intern_id:
-        input.assigneeInternId,
+      p_assignee_intern_ids:
+        input.assigneeInternIds,
     }
   );
 
@@ -373,7 +382,7 @@ export async function updateTask(
   input: UpdateTaskInput
 ): Promise<Task> {
   const { error } = await supabase.rpc(
-    "update_task_with_assignee",
+    "update_task_with_assignees",
     {
       p_task_id: input.taskId,
       p_project_id: input.projectId,
@@ -390,8 +399,8 @@ export async function updateTask(
       p_due_date: input.dueDate,
 
       p_sort_order: input.order,
-      p_assignee_intern_id:
-        input.assigneeInternId,
+      p_assignee_intern_ids:
+        input.assigneeInternIds,
     }
   );
 

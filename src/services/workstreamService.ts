@@ -3,6 +3,7 @@ import type {
   CreateWorkstreamInput,
   Workstream,
   WorkstreamStatus,
+  UpdateWorkstreamInput,
 } from "../types/domain";
 
 type WorkstreamRow = {
@@ -140,5 +141,22 @@ export async function createWorkstream(
     );
   }
 
+  return mapWorkstream(data as WorkstreamRow);
+}
+
+export async function updateWorkstream(
+  input: UpdateWorkstreamInput
+): Promise<Workstream> {
+  const currentUserId = await getCurrentUserId();
+  const { data, error } = await supabase.from("workstreams").update({
+    name: input.name.trim(), description: input.description.trim(),
+    status: input.status, sort_order: input.order, updated_by: currentUserId,
+  }).eq("id", input.workstreamId).eq("project_id", input.projectId)
+    .select(workstreamColumns).single();
+  if (error) {
+    if (error.code === "23505") throw new Error("동일한 순서의 Workstream이 이미 존재합니다.");
+    if (error.code === "23514") throw new Error("Workstream 입력값을 확인해주세요.");
+    throw new Error(`Workstream 수정 실패: ${error.message}`);
+  }
   return mapWorkstream(data as WorkstreamRow);
 }

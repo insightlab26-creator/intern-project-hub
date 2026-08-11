@@ -3,6 +3,7 @@ import type {
   CreateInternInput,
   Intern,
   InternStatus,
+  UpdateInternInput,
 } from "../types/domain";
 
 type InternRow = {
@@ -149,4 +150,32 @@ export async function createIntern(
   }
 
   return mapIntern(data as InternRow);
+}
+
+export async function updateIntern(
+  input: UpdateInternInput
+): Promise<Intern> {
+  const currentUserId = await getCurrentUserId();
+  const { data, error } = await supabase.from("interns").update({
+    name: input.name.trim(), school: input.school.trim(),
+    major: input.major.trim(), cohort: input.cohort.trim(),
+    start_date: input.startDate, end_date: input.endDate,
+    status: input.status, updated_by: currentUserId,
+  }).eq("id", input.internId).select(internColumns).single();
+  if (error) {
+    if (error.code === "23514") throw new Error("인턴 이름이나 참여 기간을 확인해주세요.");
+    throw new Error(`인턴 수정 실패: ${error.message}`);
+  }
+  return mapIntern(data as InternRow);
+}
+
+export async function linkInternProfile(
+  internId: string,
+  profileId: string | null
+): Promise<void> {
+  const currentUserId = await getCurrentUserId();
+  const { error } = await supabase.from("interns")
+    .update({ user_id: profileId, updated_by: currentUserId })
+    .eq("id", internId);
+  if (error) throw new Error(`인턴 계정 연결 실패: ${error.message}`);
 }

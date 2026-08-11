@@ -1,317 +1,36 @@
-import {
-  useEffect,
-  useState,
-  type FormEvent,
-} from "react";
-import {
-  createIntern,
-  getInterns,
-} from "../services/internService";
-import type {
-  Intern,
-  InternStatus,
-} from "../types/domain";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { createIntern, getInterns, linkInternProfile, updateIntern } from "../services/internService";
+import { getUserProfiles, type UserProfile } from "../services/authService";
+import type { Intern, InternStatus } from "../types/domain";
+import { INTERN_STATUS_LABELS } from "../constants/domainLabels";
+import ScreenState from "../components/ScreenState";
 
-const statusLabels: Record<InternStatus, string> = {
-  PLANNED: "예정",
-  ACTIVE: "활동 중",
-  COMPLETED: "종료",
-};
+const statuses = Object.keys(INTERN_STATUS_LABELS) as InternStatus[];
+const emptyForm = { name: "", school: "", major: "", cohort: "", startDate: "", endDate: "", status: "ACTIVE" as InternStatus };
 
-function InternsPage() {
-  const [interns, setInterns] = useState<Intern[]>([]);
+export default function InternsPage() {
+  const [items, setItems] = useState<Intern[]>([]);
+  const [profiles, setProfiles] = useState<UserProfile[]>([]);
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-
-  const [name, setName] = useState("");
-  const [school, setSchool] = useState("");
-  const [major, setMajor] = useState("");
-  const [cohort, setCohort] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
-  const [status, setStatus] =
-    useState<InternStatus>("ACTIVE");
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadInterns = async () => {
-      try {
-        setLoading(true);
-        setMessage("");
-
-        const list = await getInterns();
-
-        if (isMounted) {
-          setInterns(list);
-        }
-      } catch (error) {
-        console.error(error);
-
-        if (isMounted) {
-          setMessage(
-            error instanceof Error
-              ? error.message
-              : "인턴 목록을 불러오지 못했습니다."
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadInterns();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleCreate = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault();
-
-    if (!name.trim()) {
-      setMessage("인턴 이름은 필수입니다.");
-      return;
-    }
-
-    try {
-      setSaving(true);
-      setMessage("");
-
-      const createdIntern = await createIntern({
-        name,
-        school,
-        major,
-        cohort,
-        startDate: startDate || null,
-        endDate: endDate || null,
-        status,
-      });
-
-      setInterns((previous) => [
-        createdIntern,
-        ...previous,
-      ]);
-
-      setName("");
-      setSchool("");
-      setMajor("");
-      setCohort("");
-      setStartDate("");
-      setEndDate("");
-      setStatus("ACTIVE");
-
-      setShowForm(false);
-      setMessage("인턴이 등록되었습니다.");
-    } catch (error) {
-      console.error(error);
-
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "인턴 등록에 실패했습니다."
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <>
-      <header className="page-header project-page-header">
-        <div>
-          <p className="eyebrow">MANAGEMENT</p>
-          <h1>Interns</h1>
-          <p>
-            인턴의 참여 이력과 프로젝트 수행 정보를 관리합니다.
-          </p>
-        </div>
-
-        <button
-          className="primary-button"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "취소" : "+ 인턴 등록"}
-        </button>
-      </header>
-
-      {message && (
-        <div className="notice-message">
-          {message}
-        </div>
-      )}
-
-      {showForm && (
-        <section className="project-form-card">
-          <h2>새 인턴 등록</h2>
-
-          <form
-            className="project-form"
-            onSubmit={handleCreate}
-          >
-            <div className="form-grid">
-              <label>
-                이름 *
-                <input
-                  value={name}
-                  onChange={(event) =>
-                    setName(event.target.value)
-                  }
-                  placeholder="예: J"
-                />
-              </label>
-
-              <label>
-                상태
-                <select
-                  value={status}
-                  onChange={(event) =>
-                    setStatus(
-                      event.target.value as InternStatus
-                    )
-                  }
-                >
-                  <option value="PLANNED">예정</option>
-                  <option value="ACTIVE">활동 중</option>
-                  <option value="COMPLETED">종료</option>
-                </select>
-              </label>
-            </div>
-
-            <div className="form-grid">
-              <label>
-                학교
-                <input
-                  value={school}
-                  onChange={(event) =>
-                    setSchool(event.target.value)
-                  }
-                />
-              </label>
-
-              <label>
-                전공
-                <input
-                  value={major}
-                  onChange={(event) =>
-                    setMajor(event.target.value)
-                  }
-                />
-              </label>
-            </div>
-
-            <label>
-              기수 / 프로그램
-              <input
-                value={cohort}
-                onChange={(event) =>
-                  setCohort(event.target.value)
-                }
-                placeholder="예: 2026 하계"
-              />
-            </label>
-
-            <div className="form-grid">
-              <label>
-                시작일
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(event) =>
-                    setStartDate(event.target.value)
-                  }
-                />
-              </label>
-
-              <label>
-                종료일
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(event) =>
-                    setEndDate(event.target.value)
-                  }
-                />
-              </label>
-            </div>
-
-            <div className="form-actions">
-              <button
-                type="submit"
-                className="primary-button"
-                disabled={saving}
-              >
-                {saving ? "저장 중..." : "인턴 등록"}
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      {loading ? (
-        <section className="panel">
-          <div className="empty-state large">
-            <strong>인턴 목록을 불러오는 중입니다.</strong>
-          </div>
-        </section>
-      ) : interns.length === 0 ? (
-        <section className="panel">
-          <div className="empty-state large">
-            <strong>등록된 인턴이 없습니다.</strong>
-            <p>
-              인턴을 등록하면 Task 담당자로 연결할 수 있습니다.
-            </p>
-          </div>
-        </section>
-      ) : (
-        <section className="intern-table-card">
-          <div className="intern-table-header">
-            <span>이름</span>
-            <span>학교 / 전공</span>
-            <span>기수</span>
-            <span>기간</span>
-            <span>상태</span>
-          </div>
-
-          {interns.map((intern) => (
-            <div
-              className="intern-table-row"
-              key={intern.id}
-            >
-              <strong>{intern.name}</strong>
-
-              <span>
-                {intern.school || "-"}
-                {intern.major
-                  ? ` / ${intern.major}`
-                  : ""}
-              </span>
-
-              <span>{intern.cohort || "-"}</span>
-
-              <span>
-                {intern.startDate || "-"} ~{" "}
-                {intern.endDate || "-"}
-              </span>
-
-              <span className="status-badge">
-                {statusLabels[intern.status]}
-              </span>
-            </div>
-          ))}
-        </section>
-      )}
-    </>
-  );
+  const [error, setError] = useState("");
+  const load = useCallback(async () => { await Promise.resolve(); try { setLoading(true); setError(""); const [internList, profileList] = await Promise.all([getInterns(), getUserProfiles()]); setItems(internList); setProfiles(profileList); } catch (e) { setError(e instanceof Error ? e.message : "인턴 목록을 불러오지 못했습니다."); } finally { setLoading(false); } }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void load(); }, [load]);
+  const openEdit = (x: Intern) => { setEditingId(x.id); setForm({ name: x.name, school: x.school, major: x.major, cohort: x.cohort, startDate: x.startDate ?? "", endDate: x.endDate ?? "", status: x.status }); setShowForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const submit = async (e: FormEvent) => { e.preventDefault(); try { setSaving(true); setError(""); const input = { ...form, startDate: form.startDate || null, endDate: form.endDate || null }; const saved = editingId ? await updateIntern({ internId: editingId, ...input }) : await createIntern(input); setItems((old) => editingId ? old.map((x) => x.id === saved.id ? saved : x) : [saved, ...old]); setShowForm(false); } catch (err) { setError(err instanceof Error ? err.message : "인턴 저장에 실패했습니다."); } finally { setSaving(false); } };
+  return <>
+    <header className="page-header project-page-header"><div><p className="eyebrow">MANAGEMENT</p><h1>Interns</h1><p>인턴 참여 이력과 종료 상태를 관리합니다.</p></div><button className="primary-button" onClick={() => { if (showForm) setShowForm(false); else { setEditingId(null); setForm(emptyForm); setShowForm(true); } }}>{showForm ? "취소" : "+ 인턴 등록"}</button></header>
+    {error && <div className="notice-message">{error}</div>}
+    {showForm && <section className="project-form-card"><h2>{editingId ? "인턴 수정" : "새 인턴 등록"}</h2><form className="project-form" onSubmit={submit}><div className="form-grid"><label>이름 *<input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label><label>상태<select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as InternStatus })}>{statuses.map((s) => <option key={s} value={s}>{INTERN_STATUS_LABELS[s]}</option>)}</select></label></div><div className="form-grid"><label>학교<input value={form.school} onChange={(e) => setForm({ ...form, school: e.target.value })} /></label><label>전공<input value={form.major} onChange={(e) => setForm({ ...form, major: e.target.value })} /></label></div><label>기수 / 프로그램<input value={form.cohort} onChange={(e) => setForm({ ...form, cohort: e.target.value })} /></label><div className="form-grid"><label>시작일<input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></label><label>종료일<input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></label></div><div className="form-actions"><button className="primary-button" disabled={saving}>저장</button></div></form></section>}
+    {loading ? <ScreenState kind="loading" title="인턴 목록을 불러오는 중입니다." /> : items.length === 0 ? <ScreenState kind="empty" title="등록된 인턴이 없습니다." /> : <section className="intern-table-card"><div className="intern-table-scroll"><div className="intern-table-header"><span>이름</span><span>학교 / 전공</span><span>기수</span><span>참여 기간</span><span>연결 계정</span><span>상태</span><span>관리</span></div>{items.map((x) => <div className="intern-table-row" key={x.id}><div className="intern-name-cell"><strong>{x.name}</strong><small>{profiles.find((p) => p.id === x.userUid)?.email || "이메일 정보 없음"}</small></div><div className="intern-detail-cell"><strong>{x.school || "-"}</strong><span>{x.major || "전공 정보 없음"}</span></div><span>{x.cohort || "-"}</span><span className="intern-period">{formatPeriod(x.startDate, x.endDate)}</span><select aria-label={`${x.name} 계정 연결`} value={x.userUid ?? ""} onChange={(e) => void linkInternProfile(x.id, e.target.value || null).then(load)}><option value="">계정 연결 없음</option>{profiles.map((p) => <option key={p.id} value={p.id}>{p.display_name} ({p.global_role})</option>)}</select><span><span className="status-badge">{INTERN_STATUS_LABELS[x.status]}</span></span><button className="edit-button" onClick={() => openEdit(x)}>수정</button></div>)}</div></section>}
+  </>;
 }
 
-export default InternsPage;
+function formatPeriod(startDate: string | null, endDate: string | null) {
+  if (!startDate && !endDate) return "기간 미정";
+  return `${startDate || "미정"} ~ ${endDate || "진행 중"}`;
+}

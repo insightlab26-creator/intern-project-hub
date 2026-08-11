@@ -1,0 +1,11 @@
+begin; select plan(5);
+insert into auth.users(id,email) values('00000000-0000-0000-0000-000000000051','decision-test@example.com');
+insert into public.profiles(id,email,display_name,global_role,status) values('00000000-0000-0000-0000-000000000051','decision-test@example.com','Decision Test','ADMIN','ACTIVE');
+insert into public.projects(id,code,name,created_by,updated_by) values('10000000-0000-0000-0000-000000000051','DECISION-A','Decision A','00000000-0000-0000-0000-000000000051','00000000-0000-0000-0000-000000000051'),('10000000-0000-0000-0000-000000000052','DECISION-B','Decision B','00000000-0000-0000-0000-000000000051','00000000-0000-0000-0000-000000000051');
+set local role authenticated; set local request.jwt.claim.sub='00000000-0000-0000-0000-000000000051';
+select lives_ok($$insert into public.decisions(id,project_id,title,decision,status,decided_on,decided_by,created_by,updated_by) values('80000000-0000-0000-0000-000000000051','10000000-0000-0000-0000-000000000051','기술 선택','Supabase 사용','DECIDED',current_date,'00000000-0000-0000-0000-000000000051','00000000-0000-0000-0000-000000000051','00000000-0000-0000-0000-000000000051')$$,'Decision can be recorded');
+select throws_ok($$insert into public.decisions(project_id,title,decision,status,created_by,updated_by) values('10000000-0000-0000-0000-000000000051','날짜 없음','결정','DECIDED','00000000-0000-0000-0000-000000000051','00000000-0000-0000-0000-000000000051')$$,'23514',null,'Decided status requires date and decider');
+select throws_ok($$insert into public.decisions(project_id,supersedes_decision_id,title,decision,created_by,updated_by) values('10000000-0000-0000-0000-000000000052','80000000-0000-0000-0000-000000000051','잘못된 대체','결정','00000000-0000-0000-0000-000000000051','00000000-0000-0000-0000-000000000051')$$,'P0001','대체할 Decision은 같은 Project에 속해야 합니다.','Cross-project superseding is rejected');
+select lives_ok($$update public.decisions set status='ARCHIVED',updated_by='00000000-0000-0000-0000-000000000051'$$,'Decision can be archived');
+select is((select status::text from public.decisions),'ARCHIVED','Archived decision is retained');
+select * from finish(); rollback;

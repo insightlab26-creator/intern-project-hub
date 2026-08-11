@@ -18,26 +18,17 @@ import type {
   TaskStatus,
   Workstream,
 } from "../types/domain";
+import {
+  TASK_PRIORITY_LABELS,
+  TASK_STATUS_LABELS,
+} from "../constants/domainLabels";
 
 type TasksTabProps = {
   projectId: string;
+  onTaskSaved?: () => void | Promise<void>;
 };
 
-const statusLabels: Record<TaskStatus, string> = {
-  TODO: "할 일",
-  IN_PROGRESS: "진행 중",
-  REVIEW: "검토",
-  DONE: "완료",
-  HOLD: "보류",
-};
-
-const priorityLabels: Record<TaskPriority, string> = {
-  LOW: "낮음",
-  MEDIUM: "보통",
-  HIGH: "높음",
-};
-
-function TasksTab({ projectId }: TasksTabProps) {
+function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [workstreams, setWorkstreams] = useState<
     Workstream[]
@@ -55,8 +46,8 @@ function TasksTab({ projectId }: TasksTabProps) {
     useState("");
   const [parentTaskId, setParentTaskId] =
     useState("");
-  const [assigneeInternId, setAssigneeInternId] =
-    useState("");
+  const [assigneeInternIds, setAssigneeInternIds] =
+    useState<string[]>([]);
 
   const [status, setStatus] =
     useState<TaskStatus>("TODO");
@@ -104,7 +95,7 @@ function TasksTab({ projectId }: TasksTabProps) {
           setMessage(
             error instanceof Error
               ? error.message
-              : "Task 데이터를 불러오지 못했습니다."
+              : "Work Package 데이터를 불러오지 못했습니다."
           );
         }
       } finally {
@@ -126,7 +117,7 @@ function TasksTab({ projectId }: TasksTabProps) {
     setDescription("");
     setWorkstreamId("");
     setParentTaskId("");
-    setAssigneeInternId("");
+    setAssigneeInternIds([]);
     setStatus("TODO");
     setPriority("MEDIUM");
     setStartDate("");
@@ -154,9 +145,7 @@ function TasksTab({ projectId }: TasksTabProps) {
     setWorkstreamId(task.workstreamId);
     setParentTaskId(task.parentTaskId || "");
 
-    setAssigneeInternId(
-      task.assigneeInternIds[0] || ""
-    );
+    setAssigneeInternIds(task.assigneeInternIds);
 
     setStatus(task.status);
     setPriority(task.priority);
@@ -172,38 +161,6 @@ function TasksTab({ projectId }: TasksTabProps) {
       behavior: "smooth",
     });
   };
-
-  const getDescendantTaskIds = (
-    taskId: string
-  ): Set<string> => {
-    const descendants = new Set<string>();
-
-    const collectChildren = (parentId: string) => {
-      const children = tasks.filter(
-        (task) => task.parentTaskId === parentId
-      );
-
-      children.forEach((child) => {
-        descendants.add(child.id);
-        collectChildren(child.id);
-      });
-    };
-
-    collectChildren(taskId);
-
-    return descendants;
-  };
-
-  const unavailableParentIds = editingTaskId
-    ? getDescendantTaskIds(editingTaskId)
-    : new Set<string>();
-
-  const parentTaskOptions = tasks.filter(
-    (task) =>
-      task.workstreamId === workstreamId &&
-      task.id !== editingTaskId &&
-      !unavailableParentIds.has(task.id)
-  );
 
   const handleWorkstreamChange = (
     nextWorkstreamId: string
@@ -229,12 +186,12 @@ function TasksTab({ projectId }: TasksTabProps) {
     event.preventDefault();
 
     if (!title.trim()) {
-      setMessage("Task 제목은 필수입니다.");
+      setMessage("Work Package 제목은 필수입니다.");
       return;
     }
 
     if (!workstreamId) {
-      setMessage("Workstream을 선택해주세요.");
+      setMessage("프로젝트 영역을 선택해주세요.");
       return;
     }
 
@@ -249,7 +206,7 @@ function TasksTab({ projectId }: TasksTabProps) {
 
         if (!existingTask) {
           setMessage(
-            "수정할 Task를 찾을 수 없습니다."
+            "수정할 Work Package를 찾을 수 없습니다."
           );
           return;
         }
@@ -264,8 +221,7 @@ function TasksTab({ projectId }: TasksTabProps) {
           workstreamId,
           parentTaskId: parentTaskId || null,
 
-          assigneeInternId:
-            assigneeInternId || null,
+          assigneeInternIds,
 
           status,
           priority,
@@ -284,7 +240,7 @@ function TasksTab({ projectId }: TasksTabProps) {
           )
         );
 
-        setMessage("Task가 수정되었습니다.");
+        setMessage("Work Package가 수정되었습니다.");
       } else {
         const nextOrder =
           tasks
@@ -307,8 +263,7 @@ function TasksTab({ projectId }: TasksTabProps) {
           workstreamId,
           parentTaskId: parentTaskId || null,
 
-          assigneeInternId:
-            assigneeInternId || null,
+          assigneeInternIds,
 
           status,
           priority,
@@ -324,9 +279,10 @@ function TasksTab({ projectId }: TasksTabProps) {
           createdTask,
         ]);
 
-        setMessage("Task가 생성되었습니다.");
+        setMessage("Work Package가 생성되었습니다.");
       }
 
+      await onTaskSaved?.();
       resetForm();
       setShowForm(false);
     } catch (error) {
@@ -336,8 +292,8 @@ function TasksTab({ projectId }: TasksTabProps) {
         error instanceof Error
           ? error.message
           : editingTaskId
-            ? "Task 수정에 실패했습니다."
-            : "Task 생성에 실패했습니다."
+            ? "Work Package 수정에 실패했습니다."
+            : "Work Package 생성에 실패했습니다."
       );
     } finally {
       setSaving(false);
@@ -429,8 +385,8 @@ function TasksTab({ projectId }: TasksTabProps) {
                     }
                     title={
                       isCollapsed
-                        ? "하위 Task 펼치기"
-                        : "하위 Task 접기"
+                        ? "하위 Work Package 펼치기"
+                        : "하위 Work Package 접기"
                     }
                   >
                     {isCollapsed ? "▶" : "▼"}
@@ -455,7 +411,7 @@ function TasksTab({ projectId }: TasksTabProps) {
 
               <div className="task-actions">
                 <span className="status-badge">
-                  {statusLabels[task.status]}
+                  {TASK_STATUS_LABELS[task.status]}
                 </span>
 
                 <button
@@ -477,7 +433,7 @@ function TasksTab({ projectId }: TasksTabProps) {
 
             <div className="task-meta">
               <span>
-                Workstream
+                프로젝트 영역
                 <strong>
                   {getWorkstreamName(
                     task.workstreamId
@@ -497,7 +453,7 @@ function TasksTab({ projectId }: TasksTabProps) {
               <span>
                 우선순위
                 <strong>
-                  {priorityLabels[task.priority]}
+                  {TASK_PRIORITY_LABELS[task.priority]}
                 </strong>
               </span>
 
@@ -527,10 +483,9 @@ function TasksTab({ projectId }: TasksTabProps) {
     <>
       <div className="tab-toolbar">
         <div>
-          <h2>Tasks</h2>
+          <h2>Work Packages</h2>
           <p>
-            프로젝트의 실제 수행 업무를 등록하고 진행
-            상태를 관리합니다.
+            개인 To-do가 아닌 프로젝트의 상위 실행 단위와 진행 상태를 관리합니다.
           </p>
         </div>
 
@@ -539,7 +494,7 @@ function TasksTab({ projectId }: TasksTabProps) {
             className="primary-button"
             onClick={handleNewTask}
           >
-            + Task 추가
+            + Work Package 추가
           </button>
         )}
       </div>
@@ -555,8 +510,8 @@ function TasksTab({ projectId }: TasksTabProps) {
           <div className="task-form-header">
             <h2>
               {editingTaskId
-                ? "Task 수정"
-                : "새 Task"}
+                ? "Work Package 수정"
+                : "새 Work Package"}
             </h2>
 
             <button
@@ -573,7 +528,7 @@ function TasksTab({ projectId }: TasksTabProps) {
             onSubmit={handleSubmit}
           >
             <label>
-              Task 제목 *
+              Work Package 제목 *
               <input
                 value={title}
                 onChange={(event) =>
@@ -595,7 +550,7 @@ function TasksTab({ projectId }: TasksTabProps) {
 
             <div className="form-grid">
               <label>
-                Workstream *
+                프로젝트 영역 *
                 <select
                   value={workstreamId}
                   onChange={(event) =>
@@ -605,7 +560,7 @@ function TasksTab({ projectId }: TasksTabProps) {
                   }
                 >
                   <option value="">
-                    Workstream 선택
+                    프로젝트 영역 선택
                   </option>
 
                   {workstreams.map((workstream) => (
@@ -622,17 +577,17 @@ function TasksTab({ projectId }: TasksTabProps) {
               <label>
                 담당 인턴
                 <select
-                  value={assigneeInternId}
+                  multiple
+                  value={assigneeInternIds}
                   onChange={(event) =>
-                    setAssigneeInternId(
-                      event.target.value
+                    setAssigneeInternIds(
+                      Array.from(
+                        event.target.selectedOptions,
+                        (option) => option.value
+                      )
                     )
                   }
                 >
-                  <option value="">
-                    담당자 없음
-                  </option>
-
                   {interns.map((intern) => (
                     <option
                       key={intern.id}
@@ -645,6 +600,7 @@ function TasksTab({ projectId }: TasksTabProps) {
                     </option>
                   ))}
                 </select>
+                <small>여러 명은 Ctrl(Windows) 또는 Cmd(macOS)를 누르고 선택하세요.</small>
               </label>
             </div>
 
@@ -702,31 +658,7 @@ function TasksTab({ projectId }: TasksTabProps) {
               </label>
             </div>
 
-            <label>
-              상위 Task
-              <select
-                value={parentTaskId}
-                onChange={(event) =>
-                  setParentTaskId(
-                    event.target.value
-                  )
-                }
-                disabled={!workstreamId}
-              >
-                <option value="">
-                  상위 Task 없음
-                </option>
-
-                {parentTaskOptions.map((task) => (
-                  <option
-                    key={task.id}
-                    value={task.id}
-                  >
-                    {task.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {editingTaskId && parentTaskId && <div className="notice-message">기존 상위 Work Package 관계는 보존됩니다. 신규 하위 Work Package 생성은 지원하지 않습니다.</div>}
 
             <div className="form-grid">
               <label>
@@ -766,7 +698,7 @@ function TasksTab({ projectId }: TasksTabProps) {
                   ? "저장 중..."
                   : editingTaskId
                     ? "수정 저장"
-                    : "Task 생성"}
+                    : "Work Package 생성"}
               </button>
             </div>
           </form>
@@ -777,7 +709,7 @@ function TasksTab({ projectId }: TasksTabProps) {
         <section className="panel">
           <div className="empty-state large">
             <strong>
-              Task 데이터를 불러오는 중입니다.
+              Work Package 데이터를 불러오는 중입니다.
             </strong>
           </div>
         </section>
@@ -785,11 +717,10 @@ function TasksTab({ projectId }: TasksTabProps) {
         <section className="panel">
           <div className="empty-state large">
             <strong>
-              등록된 Task가 없습니다.
+              등록된 Work Package가 없습니다.
             </strong>
             <p>
-              Workstream을 실제 수행 업무로
-              구체화해보세요.
+              프로젝트 영역을 상위 실행 단위로 구체화해보세요.
             </p>
           </div>
         </section>
@@ -831,7 +762,7 @@ function TasksTab({ projectId }: TasksTabProps) {
                   </div>
 
                   <strong>
-                    {workstreamTasks.length} Tasks
+                    {workstreamTasks.length} Work Packages
                   </strong>
                 </div>
 

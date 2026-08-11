@@ -1,0 +1,12 @@
+begin;
+select plan(8);
+select has_column('public', 'projects', 'project_type');
+select has_column('public', 'projects', 'teams_folder_url');
+select has_column('public', 'projects', 'next_review_date');
+select has_column('public', 'decisions', 'change_before');
+select has_table('public', 'review_gates');
+select col_is_fk('public', 'review_gates', 'project_id');
+select col_is_fk('public', 'review_gates', 'deliverable_id');
+select is(enum_range(null::public.review_gate_result)::text, '{REVISE,KEEP,ASSET,DROP}', 'review gate results are fixed');
+select * from finish();
+rollback;
