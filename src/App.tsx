@@ -8,7 +8,6 @@ import TaskDetailPage from "./pages/TaskDetailPage";
 import ProgramsPage from "./pages/ProgramsPage";
 import ProgramDetailPage from "./pages/ProgramDetailPage";
 import DocumentsPage from "./pages/DocumentsPage";
-import ManagerNotesPage from "./pages/ManagerNotesPage";
 import UsersPage from "./pages/UsersPage";
 import InternReviewsPage from "./pages/InternReviewsPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
@@ -24,10 +23,10 @@ import { getCurrentSession, getUserProfile, signIn, signOut, type UserProfile } 
 import "./App.css";
 
 const menuGroups = [
-  { items: [{ name: "Dashboard", path: "/" }, { name: "Global Search", path: "/search" }, { name: "Reports", path: "/reports" }] },
+  { items: [{ name: "Dashboard", path: "/" }, { name: "Search", path: "/search" }, { name: "Reports", path: "/reports" }] },
   { title: "CONTROL TOWER", items: [{ name: "Projects", path: "/projects" }, { name: "Work Packages", path: "/tasks" }, { name: "Calendar", path: "/calendar" }] },
   { title: "KNOWLEDGE", items: [{ name: "Documents", path: "/documents" }] },
-  { title: "OPERATIONS", items: [{ name: "Programs", path: "/programs" }, { name: "Interns", path: "/interns" }, { name: "Intern Reviews", path: "/intern-reviews" }, { name: "Manager Notes", path: "/manager-notes" }] },
+  { title: "OPERATIONS", items: [{ name: "Programs", path: "/programs" }, { name: "Interns", path: "/interns" }, { name: "Intern Reviews", path: "/intern-reviews" }] },
   { title: "SYSTEM", items: [{ name: "Users", path: "/users" }, { name: "Audit Logs", path: "/audit-logs" }] },
 ];
 
@@ -52,7 +51,7 @@ export default function App() {
         <div className="topbar-user"><span className="topbar-avatar">{profile.display_name.slice(0, 1)}</span><div><strong>{profile.display_name}</strong><span>{profile.global_role}</span></div></div>
         <button className="topbar-logout" onClick={logout}>로그아웃</button>
       </header>
-      <main className="main-content">{profile.global_role !== "ADMIN" ? <ScreenState kind="empty" title="접근 가능한 기능이 없습니다." /> : <Routes><Route path="/" element={<DashboardPage profile={profile} />} /><Route path="/search" element={<GlobalSearchPage />} /><Route path="/reports" element={<ReportsPage />} /><Route path="/projects" element={<ProjectsPage />} /><Route path="/projects/:projectId" element={<ProjectDetailPage />} /><Route path="/tasks" element={<TasksPage />} /><Route path="/tasks/review" element={<TasksPage reviewOnly />} /><Route path="/tasks/:taskId" element={<TaskDetailPage />} /><Route path="/calendar" element={<CalendarPage />} /><Route path="/plan-import" element={<Navigate to="/projects" replace />} /><Route path="/programs" element={<ProgramsPage />} /><Route path="/programs/:programId" element={<ProgramDetailPage />} /><Route path="/interns" element={<InternsPage />} /><Route path="/intern-reviews" element={<InternReviewsPage />} /><Route path="/kpis" element={<Navigate to="/projects" replace />} /><Route path="/documents" element={<DocumentsPage />} /><Route path="/resources" element={<Navigate to="/documents" replace />} /><Route path="/deliverables" element={<Navigate to="/documents" replace />} /><Route path="/decisions" element={<Navigate to="/projects" replace />} /><Route path="/manager-notes" element={<ManagerNotesPage />} /><Route path="/users" element={<UsersPage />} /><Route path="/audit-logs" element={<AuditLogsPage />} /><Route path="/data-cleanup" element={<DataCleanupPage />} /><Route path="/:placeholder" element={<Placeholder />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>}</main>
+      <main className="main-content">{profile.global_role !== "ADMIN" ? <ScreenState kind="empty" title="접근 가능한 기능이 없습니다." /> : <Routes><Route path="/" element={<DashboardPage profile={profile} />} /><Route path="/search" element={<GlobalSearchPage />} /><Route path="/reports" element={<ReportsPage />} /><Route path="/projects" element={<ProjectsPage />} /><Route path="/projects/:projectId" element={<ProjectDetailPage />} /><Route path="/tasks" element={<TasksPage />} /><Route path="/tasks/review" element={<TasksPage reviewOnly />} /><Route path="/tasks/:taskId" element={<TaskDetailPage />} /><Route path="/calendar" element={<CalendarPage />} /><Route path="/plan-import" element={<Navigate to="/projects" replace />} /><Route path="/programs" element={<ProgramsPage />} /><Route path="/programs/:programId" element={<ProgramDetailPage />} /><Route path="/interns" element={<InternsPage />} /><Route path="/intern-reviews" element={<InternReviewsPage />} /><Route path="/kpis" element={<Navigate to="/projects" replace />} /><Route path="/documents" element={<DocumentsPage />} /><Route path="/resources" element={<Navigate to="/documents" replace />} /><Route path="/deliverables" element={<Navigate to="/documents" replace />} /><Route path="/decisions" element={<Navigate to="/projects" replace />} /><Route path="/manager-notes" element={<Navigate to="/" replace />} /><Route path="/users" element={<UsersPage />} /><Route path="/audit-logs" element={<AuditLogsPage />} /><Route path="/data-cleanup" element={<DataCleanupPage />} /><Route path="/:placeholder" element={<Placeholder />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>}</main>
     </div>
   </div>;
 }

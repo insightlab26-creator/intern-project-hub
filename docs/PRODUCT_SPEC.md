@@ -52,7 +52,7 @@ Intern Project Hub는 인턴 프로그램의 업무, 산출물, 의사결정, �
 - Task 진행·학습·장애·다음 계획 타임라인과 관리자 검토
 - Dashboard 지연 Task 목록
 - Documents Teams 링크 등록·검색·수정·보관 및 Project/Work Package 연결
-- Manager Notes 대상별 민감 메모·위험·후속 조치 관리
+- Manager Notes 데이터와 서비스는 보존하지만 사용자 UI에서는 현재 숨김
 - Users 계정 초대, 표시 이름·역할 수정, 비밀번호 재설정 메일과 로그인 계정 활성화·종료
 - Intern Reviews 6개 역량 점수와 강점·개선점·성장 목표 관리
 - 월간 Calendar의 Project/Task 일정과 팀원·Project 필터

@@ -137,6 +137,7 @@ Project에 속한 의사결정의 배경, 대안, 결정, 영향과 후속 조�
 ### manager_notes
 
 Project·Intern·Task를 대상으로 하는 ADMIN 전용 민감 운영 기록이다. 유형, 후속 확인일, 해결일과 보관 상태를 관리하며 교차 Project Task 연결을 차단한다.
+현재 데이터와 서비스는 보존하되 사이드바, 직접 화면, Dashboard 설정, 통합 검색과 Data Cleanup UI에서는 숨긴다.
 
 ## 5. DB 함수와 Trigger
 

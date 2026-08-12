@@ -10,7 +10,6 @@ const specs: { table: string; entityType: DeletableEntity; typeLabel: string; na
   { table: "programs", entityType: "program", typeLabel: "Program", name: "name", context: "code" },
   { table: "resources", entityType: "resource", typeLabel: "Resource", name: "title" },
   { table: "deliverables", entityType: "deliverable", typeLabel: "Document", name: "title" },
-  { table: "manager_notes", entityType: "manager_note", typeLabel: "Manager Note", name: "subject" },
   { table: "intern_reviews", entityType: "intern_review", typeLabel: "Intern Review", name: "review_cycle" },
 ];
 
