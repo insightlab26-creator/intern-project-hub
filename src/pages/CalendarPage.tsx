@@ -10,7 +10,7 @@ type CalendarEvent = {
   id: string;
   date: string;
   title: string;
-  kind: "project-start" | "project-end" | "project-review" | "task-start" | "task-due";
+  kind: "project-start" | "project-end" | "task-start" | "task-due";
   projectId: string;
   taskId: string | null;
   assigneeIds: string[];
@@ -19,7 +19,6 @@ type CalendarEvent = {
 const kindLabels: Record<CalendarEvent["kind"], string> = {
   "project-start": "프로젝트 시작",
   "project-end": "프로젝트 종료",
-  "project-review": "Next Review",
   "task-start": "업무 시작",
   "task-due": "업무 마감",
 };
@@ -67,7 +66,6 @@ export default function CalendarPage() {
       if ((projectFilter && project.id !== projectFilter) || !eligibleProjects.has(project.id)) return;
       if (project.startDate) result.push({ id: `ps-${project.id}`, date: project.startDate, title: `${project.name} 시작`, kind: "project-start", projectId: project.id, taskId: null, assigneeIds: [] });
       if (project.targetEndDate) result.push({ id: `pe-${project.id}`, date: project.targetEndDate, title: `${project.name} 종료 예정`, kind: "project-end", projectId: project.id, taskId: null, assigneeIds: [] });
-      if (project.nextReviewDate) result.push({ id: `pr-${project.id}`, date: project.nextReviewDate, title: `${project.name} Next Review`, kind: "project-review", projectId: project.id, taskId: null, assigneeIds: [] });
     });
     tasks.forEach((task) => {
       if ((projectFilter && task.projectId !== projectFilter) || (internFilter && !task.assigneeInternIds.includes(internFilter))) return;

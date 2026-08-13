@@ -30,7 +30,7 @@ export const PROJECT_STATUS_LABELS: Record<
   DROPPED: "중단",
 };
 
-export const PROJECT_TYPE_LABELS:Record<ProjectType,string>={EXPLORE:"EXPLORE",BUILD:"BUILD"};
+export const PROJECT_TYPE_LABELS:Record<ProjectType,string>={EXPLORE:"EXPLORE",BUILD:"BUILD",REFINE:"REFINE"};
 export const REVIEW_GATE_RESULT_LABELS:Record<ReviewGateResult,string>={REVISE:"수정 필요",KEEP:"참고 보관",ASSET:"BX 자산",DROP:"중단"};
 
 export const WORKSTREAM_STATUS_LABELS: Record<

@@ -756,7 +756,7 @@ input {
 
 .project-overview {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 
@@ -1044,6 +1044,7 @@ input {
 .intern-name-cell small, .intern-detail-cell span { color: var(--color-text-muted); font-size: 9px; }
 .intern-period { color: var(--color-text-secondary); font-size: 10px; white-space: nowrap; }
 .project-header-actions { display: flex; align-items: center; gap: 10px; }
+.project-detail-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; }
 .modal-backdrop { position: fixed; inset: 0; display: grid; padding: 28px; overflow-y: auto; place-items: center; background: rgb(17 24 39 / 58%); z-index: 1000; }
 .plan-import-modal { width: min(860px, 100%); max-height: calc(100vh - 56px); overflow: hidden; border-radius: 18px; background: #fff; box-shadow: 0 24px 70px rgb(17 24 39 / 30%); }
 .plan-import-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 24px 26px 20px; border-bottom: 1px solid var(--color-border-subtle); }
@@ -1863,14 +1864,12 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent-blue) !im
 .dashboard-card-heading span { font-size: 11.5px; }
 .dashboard-card-heading a, .dashboard-card-heading small { color: #9296a1; font-size: 12px; }
 .portfolio-card .dashboard-card-heading { margin-bottom: 18px; }
-.portfolio-metrics { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.portfolio-metrics { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
 .portfolio-metrics .metric-card { padding: 18px; border-radius: 16px; background: #f7f8fb; }
 .portfolio-metrics .metric-card > span { color: #5a5e69; font-size: 12.5px; font-weight: 700; }
 .portfolio-metrics .metric-card > i { top: 22px; right: 18px; width: 7px; height: 7px; }
 .portfolio-metrics .metric-card > strong { margin-top: 8px; font-size: 24px; }
 .portfolio-metrics .metric-card > p { margin-top: 6px; color: #9296a1; font-size: 11.5px; font-weight: 500; }
-.portfolio-review-list .dashboard-empty { min-height: 0; padding: 28px 0 4px; font-size: 13px; }
-.portfolio-review-list .modern-task-row { margin: 0 -24px; }
 .dashboard-chart-grid, .dashboard-bottom-grid { grid-template-columns: 1fr 1fr; gap: 16px; margin: 0; }
 .weekly-chart-body { display: flex; min-height: 110px; gap: 28px; }
 .donut-chart { width: 110px; height: 110px; }
@@ -1946,7 +1945,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent-blue) !im
 .calendar-day-events { gap: 5px; }
 .calendar-event { gap: 6px; font-size: 11.5px; line-height: 1.35; }
 .calendar-event i, .month-event-list i { width: 7px; height: 7px; }
-.event-project-review i, .month-event-list i.event-project-review { background: #8b7bf7; }
 .calendar-day-events small { font-size: 10.5px; font-weight: 700; }
 .month-event-list time { font-size: 11.5px; }
 .month-event-list strong { font-size: 12.5px; }

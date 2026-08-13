@@ -31,7 +31,7 @@ Intern Project Hub는 인턴 프로그램의 업무, 산출물, 의사결정, �
 
 ## 3. 현재 제공 기능
 
-- Project의 `EXPLORE / BUILD` 유형, 목적·배경·기대 결과·분야·현재 단계·Next Review·Teams 작업 폴더·키워드·운영 담당자 관리
+- Project의 `EXPLORE / BUILD / REFINE` 유형, 목적·배경·분야·현재 단계·Teams 작업 폴더·해시태그형 키워드·운영 담당자 관리
 - Project 상태의 검토·수정·중단 단계와 Project Review Gate (`REVISE / KEEP / ASSET / DROP`) 이력
 - Project Review의 결정 요약·다음 조치·Teams 회의록 링크 기록
 
@@ -93,7 +93,7 @@ Documents는 독립 메뉴와 Project 상세 탭에서 조회·등록·수정할
 - DB의 자동화는 명확한 사실만 처리하고 완료·보류 같은 운영 판단은 관리자에게 남긴다.
 - 신규 Work Package는 기본적으로 계층화하지 않으며 개인 To-do와 회의 Action Item은 Loop/Planner에서 관리한다. 과거 계층형 Task 관계는 읽기 호환을 위해 보존한다.
 - 진행 업데이트는 일일 업무일지가 아니라 주요 단계 변경, 완료, 검토 요청과 중요한 장애를 남기는 기록이다.
-- Calendar는 Project 시작·종료, Next Review와 Work Package 목표 일정을 중심으로 제공한다.
+- Calendar는 Project 시작·종료와 Work Package 목표 일정을 중심으로 제공한다.
 - Intern Review와 Manager Note는 프로젝트 핵심 흐름이 아닌 운영 보조 기능으로 분리한다.
 - Data Cleanup은 일상 내비게이션에 노출하지 않고 승인된 관리자가 직접 접근하는 시스템 기능으로 유지한다.
 

@@ -111,3 +111,9 @@
 **결정:** `MANAGER` 역할을 추가하고 기존 `projects.operator_id`를 담당 Project 권한 경계로 사용한다. ADMIN은 사이트 전체를 관리하고 운영 담당자를 지정하며, MANAGER는 담당 Project의 Work Package, 참여 인턴, 진행 기록, Documents와 Review를 운영한다.
 
 **경계:** MANAGER는 Project 생성·담당자 변경, 사용자·프로그램·평가·감사·삭제 기능에 접근하지 않는다. 별도 인수인계 워크플로는 만들지 않고 Project의 기존 맥락과 기록을 다음 관리자가 이어서 사용한다.
+
+## 2026-08-13 — Project 유형을 Explore, Build, Refine으로 구분
+
+**결정:** Project 유형은 아이디어를 탐색·검증하는 `EXPLORE`, 신규 결과물·서비스를 구축하는 `BUILD`, 기존 결과물·자산을 개선·고도화하는 `REFINE`의 세 가지로 구분한다.
+
+**호환성:** 기존 `EXPLORE`, `BUILD` 데이터는 변경하지 않고 PostgreSQL enum에 `REFINE` 값만 신규 migration으로 추가한다.
