@@ -975,6 +975,9 @@ input {
 .intern-detail-art > div strong, .intern-detail-art > div span { display: block; }
 .intern-detail-art > div strong { font-family: "Sora", sans-serif; font-size: 17px; }
 .intern-detail-art > div span { margin-top: 3px; color: rgb(255 255 255 / 76%); font-size: 11px; }
+.intern-detail-art > div .intern-detail-name-row { display: flex; align-items: center; gap: 7px; margin: 0; color: #fff; }
+.intern-detail-name-row button { height: 17px; padding: 0 6px; border: 1px solid rgb(255 255 255 / 50%); border-radius: 4px; background: rgb(20 22 26 / 45%); color: #fff; cursor: pointer; font-size: 9px; line-height: 17px; }
+.intern-detail-name-row button:hover { background: rgb(20 22 26 / 70%); }
 .intern-detail-content { flex: 1; min-width: 0; padding: 20px 24px 22px; }
 .intern-detail-content > header { display: flex; align-items: center; justify-content: space-between; }
 .intern-detail-content > header h2 { margin: 0; font-family: "Sora", sans-serif; font-size: 15px; }
@@ -994,8 +997,6 @@ input {
 .intern-stat-value i { width: 70px; height: 5px; overflow: hidden; border-radius: 3px; background: #f0f1f4; }
 .intern-stat-value b { display: block; height: 100%; border-radius: inherit; }
 .intern-stat-value strong { width: 24px; font-family: "Sora", sans-serif; font-size: 11px; text-align: right; }
-.intern-detail-actions { display: flex; gap: 8px; margin-top: 14px; }
-.intern-detail-actions select { min-width: 0; flex: 1; padding: 7px 9px; border: 1px solid #dcdfe6; border-radius: 8px; background: #fff; color: #3d4048; font-size: 10px; }
 
 @media (max-width: 1100px) { .intern-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 800px) { .intern-collection-header { align-items: flex-start; flex-direction: column; } .intern-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .intern-detail-art { width: 240px; } }
