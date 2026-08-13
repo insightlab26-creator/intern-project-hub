@@ -77,7 +77,6 @@ export type Project = {
   expectedOutcome: string;
   field: string;
   currentStage: string;
-  nextReviewDate: string | null;
   teamsFolderUrl: string | null;
   keywords: string[];
   operatorId: string | null;
@@ -109,7 +108,6 @@ export type CreateProjectInput = {
   expectedOutcome: string;
   field: string;
   currentStage: string;
-  nextReviewDate: string | null;
   teamsFolderUrl: string | null;
   keywords: string[];
   operatorId: string | null;
@@ -346,9 +344,8 @@ export type AuditAction="INSERT"|"UPDATE"|"DELETE"|"INVITE"|"PASSWORD_RESET"|"DE
 
 export type DashboardTaskItem={id:string;title:string;projectName:string;status:TaskStatus;priority:TaskPriority;dueDate:string|null;updatedAt:string;assigneeNames:string[]};
 export type DashboardTeamLoad={internId:string|null;name:string;total:number;todo:number;inProgress:number;review:number;hold:number};
-export type DashboardProjectItem={id:string;name:string;projectType:ProjectType;status:ProjectStatus;targetEndDate:string|null;nextReviewDate:string|null;currentStage:string};
 export type DashboardWidgetKey="TOTAL_TASKS"|"IN_PROGRESS"|"COMPLETION_RATE"|"DUE_SOON"|"ACTIVE_PROJECTS"|"ACTIVE_PROGRAMS"|"ACTIVE_INTERNS"|"OVERDUE_TASKS"|"UNASSIGNED_TASKS"|"REVIEW_TASKS"|"PENDING_DELIVERABLES"|"OPEN_MANAGER_NOTES"|"FINALIZED_REVIEWS"|"RESOURCE_COUNT";
-export type DashboardSummary={exploreProjectCount:number;buildProjectCount:number;refineProjectCount:number;projectReviewCount:number;revisionProjectCount:number;overdueProjectCount:number;upcomingReviewProjects:DashboardProjectItem[];totalTaskCount:number;inProgressTaskCount:number;completionRate:number;dueSoonCount:number;activeProjectCount:number;activeProgramCount:number;activeInternCount:number;overdueTaskCount:number;unassignedTaskCount:number;reviewTaskCount:number;pendingDeliverableCount:number;openManagerNoteCount:number;finalizedReviewCount:number;resourceCount:number;weeklyTotal:number;weeklyDone:number;weeklyProgressRate:number;weeklyStatusCounts:Record<TaskStatus,number>;teamLoads:DashboardTeamLoad[];recentTasks:DashboardTaskItem[];dueAlerts:DashboardTaskItem[];reviewTasks:DashboardTaskItem[]};
+export type DashboardSummary={exploreProjectCount:number;buildProjectCount:number;refineProjectCount:number;projectReviewCount:number;revisionProjectCount:number;overdueProjectCount:number;totalTaskCount:number;inProgressTaskCount:number;completionRate:number;dueSoonCount:number;activeProjectCount:number;activeProgramCount:number;activeInternCount:number;overdueTaskCount:number;unassignedTaskCount:number;reviewTaskCount:number;pendingDeliverableCount:number;openManagerNoteCount:number;finalizedReviewCount:number;resourceCount:number;weeklyTotal:number;weeklyDone:number;weeklyProgressRate:number;weeklyStatusCounts:Record<TaskStatus,number>;teamLoads:DashboardTeamLoad[];recentTasks:DashboardTaskItem[];dueAlerts:DashboardTaskItem[];reviewTasks:DashboardTaskItem[]};
 export type SearchScope="PROJECTS"|"WORKSTREAMS"|"TASKS"|"PROGRAMS"|"INTERNS"|"DELIVERABLES"|"MANAGER_NOTES";
 export type GlobalSearchResult={id:string;scope:SearchScope;title:string;description:string;context:string;path:string;updatedAt:string|null};
 export type ReportKind="PROJECT_PROGRESS"|"INTERN_PERFORMANCE"|"WEEKLY_TASKS";

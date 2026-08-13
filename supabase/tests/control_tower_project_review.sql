@@ -1,8 +1,7 @@
 begin;
-select plan(8);
+select plan(7);
 select has_column('public', 'projects', 'project_type');
 select has_column('public', 'projects', 'teams_folder_url');
-select has_column('public', 'projects', 'next_review_date');
 select has_column('public', 'decisions', 'change_before');
 select has_table('public', 'review_gates');
 select col_is_fk('public', 'review_gates', 'project_id');

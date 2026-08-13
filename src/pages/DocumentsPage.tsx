@@ -80,7 +80,7 @@ export default function DocumentsPage({ projectId, embedded = false }: { project
     {show && <section className="project-form-card"><form className="project-form" onSubmit={submit}>
       <div className="form-grid">
         <label>Project *<select required disabled={Boolean(projectId)} value={form.projectId} onChange={(event) => setForm({ ...form, projectId: event.target.value, taskId: "" })}><option value="">선택</option>{projects.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</select></label>
-        <label>Work Package<select value={form.taskId} onChange={(event) => setForm({ ...form, taskId: event.target.value })}><option value="">연결 안 함</option>{tasks.filter((task) => task.projectId === form.projectId).map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}</select></label>
+        <label>실행 업무<select value={form.taskId} onChange={(event) => setForm({ ...form, taskId: event.target.value })}><option value="">연결 안 함</option>{tasks.filter((task) => task.projectId === form.projectId).map((task) => <option key={task.id} value={task.id}>{task.title}</option>)}</select></label>
       </div>
       <label>제목 *<input required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>
       <label>Teams 링크 *<input required type="url" placeholder="https://" value={form.url} onChange={(event) => setForm({ ...form, url: event.target.value })} /></label>

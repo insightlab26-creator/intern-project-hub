@@ -14,9 +14,9 @@ Intern Project Hub는 인턴 프로그램의 업무, 산출물, 의사결정, �
 - 인턴 성장과 평가
 - 후속 인턴에게 전달할 지식자산
 
-사용자 화면에서 `Task`는 개인 To-do가 아니라 Project 아래의 상위 실행 단위인 `Work Package`를 뜻한다. 실제 세부 Action Item과 일정은 Loop/Planner에서 관리하며 웹에 중복 입력하지 않는다. 기존 DB의 `tasks` 명칭과 관계는 호환성을 위해 유지한다.
+사용자 화면에서 `Task`는 개인 To-do가 아니라 Project 아래에서 인턴에게 맡기는 구체적인 결과물 단위인 `실행 업무`를 뜻한다. 실제 세부 Action Item과 일정은 Loop/Planner에서 관리하며 웹에 중복 입력하지 않는다. 기존 DB의 `tasks` 명칭과 관계는 호환성을 위해 유지한다.
 
-`Workstream`은 Work Package를 묶는 프로젝트 단계 또는 업무 영역으로 사용한다. Document는 파일을 업로드하지 않고 Teams 원본 URL을 가리키는 단순 인덱스 역할만 한다. 기존 Resource와 Deliverable DB 구조는 데이터 호환을 위해 유지한다.
+`Workstream`은 실행 업무를 주제나 단계별로 묶는 `업무 영역`으로 사용한다. Document는 파일을 업로드하지 않고 Teams 원본 URL을 가리키는 단순 인덱스 역할만 한다. 기존 Resource와 Deliverable DB 구조는 데이터 호환을 위해 유지한다.
 
 ## 2. 사용자
 

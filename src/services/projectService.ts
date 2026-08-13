@@ -19,7 +19,6 @@ type ProjectRow = {
   expected_outcome: string;
   field: string;
   current_stage: string;
-  next_review_date: string | null;
   teams_folder_url: string | null;
   keywords: string[];
   operator_id: string | null;
@@ -48,7 +47,6 @@ const projectColumns = `
   expected_outcome,
   field,
   current_stage,
-  next_review_date,
   teams_folder_url,
   keywords,
   operator_id,
@@ -74,7 +72,6 @@ function mapProject(row: ProjectRow): Project {
     expectedOutcome: row.expected_outcome,
     field: row.field,
     currentStage: row.current_stage,
-    nextReviewDate: row.next_review_date,
     teamsFolderUrl: row.teams_folder_url,
     keywords: row.keywords,
     operatorId: row.operator_id,
@@ -166,7 +163,6 @@ export async function createProject(
       expected_outcome: input.expectedOutcome.trim(),
       field: input.field.trim(),
       current_stage: input.currentStage.trim(),
-      next_review_date: input.nextReviewDate,
       teams_folder_url: input.teamsFolderUrl,
       keywords: input.keywords.map((keyword) => keyword.trim()).filter(Boolean),
       operator_id: input.operatorId,
@@ -214,7 +210,7 @@ export async function updateProject(
       description: input.description.trim(), status: input.status,
       project_type: input.projectType, purpose: input.purpose.trim(), background: input.background.trim(),
       expected_outcome: input.expectedOutcome.trim(), field: input.field.trim(), current_stage: input.currentStage.trim(),
-      next_review_date: input.nextReviewDate, teams_folder_url: input.teamsFolderUrl,
+      teams_folder_url: input.teamsFolderUrl,
       keywords: input.keywords.map((keyword) => keyword.trim()).filter(Boolean), operator_id: input.operatorId,
       start_date: input.startDate, target_end_date: input.targetEndDate,
       updated_by: currentUserId,

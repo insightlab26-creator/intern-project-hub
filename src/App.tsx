@@ -25,14 +25,14 @@ import "./App.css";
 
 const menuGroups = [
   { items: [{ name: "Dashboard", path: "/" }, { name: "Search", path: "/search" }, { name: "Reports", path: "/reports" }] },
-  { title: "CONTROL TOWER", items: [{ name: "Projects", path: "/projects" }, { name: "Work Packages", path: "/tasks" }, { name: "Calendar", path: "/calendar" }] },
+  { title: "CONTROL TOWER", items: [{ name: "Projects", path: "/projects" }, { name: "실행 업무", path: "/tasks" }, { name: "Calendar", path: "/calendar" }] },
   { title: "KNOWLEDGE", items: [{ name: "Documents", path: "/documents" }] },
   { title: "OPERATIONS", items: [{ name: "Programs", path: "/programs" }, { name: "Interns", path: "/interns" }, { name: "Intern Reviews", path: "/intern-reviews" }] },
   { title: "SYSTEM", items: [{ name: "Users", path: "/users" }, { name: "Audit Logs", path: "/audit-logs" }] },
 ];
 const managerMenuGroups = [
   { items: [{ name: "Dashboard", path: "/" }] },
-  { title: "CONTROL TOWER", items: [{ name: "Projects", path: "/projects" }, { name: "Work Packages", path: "/tasks" }, { name: "Calendar", path: "/calendar" }] },
+  { title: "CONTROL TOWER", items: [{ name: "Projects", path: "/projects" }, { name: "실행 업무", path: "/tasks" }, { name: "Calendar", path: "/calendar" }] },
   { title: "KNOWLEDGE", items: [{ name: "Documents", path: "/documents" }] },
 ];
 

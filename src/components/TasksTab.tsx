@@ -95,7 +95,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
           setMessage(
             error instanceof Error
               ? error.message
-              : "Work Package 데이터를 불러오지 못했습니다."
+              : "실행 업무 데이터를 불러오지 못했습니다."
           );
         }
       } finally {
@@ -186,12 +186,12 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
     event.preventDefault();
 
     if (!title.trim()) {
-      setMessage("Work Package 제목은 필수입니다.");
+      setMessage("실행 업무 제목은 필수입니다.");
       return;
     }
 
     if (!workstreamId) {
-      setMessage("프로젝트 영역을 선택해주세요.");
+      setMessage("업무 영역을 선택해주세요.");
       return;
     }
 
@@ -206,7 +206,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
 
         if (!existingTask) {
           setMessage(
-            "수정할 Work Package를 찾을 수 없습니다."
+            "수정할 실행 업무를 찾을 수 없습니다."
           );
           return;
         }
@@ -240,7 +240,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
           )
         );
 
-        setMessage("Work Package가 수정되었습니다.");
+        setMessage("실행 업무가 수정되었습니다.");
       } else {
         const nextOrder =
           tasks
@@ -279,7 +279,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
           createdTask,
         ]);
 
-        setMessage("Work Package가 생성되었습니다.");
+        setMessage("실행 업무가 생성되었습니다.");
       }
 
       await onTaskSaved?.();
@@ -292,8 +292,8 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
         error instanceof Error
           ? error.message
           : editingTaskId
-            ? "Work Package 수정에 실패했습니다."
-            : "Work Package 생성에 실패했습니다."
+            ? "실행 업무 수정에 실패했습니다."
+            : "실행 업무 생성에 실패했습니다."
       );
     } finally {
       setSaving(false);
@@ -385,8 +385,8 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
                     }
                     title={
                       isCollapsed
-                        ? "하위 Work Package 펼치기"
-                        : "하위 Work Package 접기"
+                        ? "하위 실행 업무 펼치기"
+                        : "하위 실행 업무 접기"
                     }
                   >
                     {isCollapsed ? "▶" : "▼"}
@@ -433,7 +433,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
 
             <div className="task-meta">
               <span>
-                프로젝트 영역
+                업무 영역
                 <strong>
                   {getWorkstreamName(
                     task.workstreamId
@@ -483,9 +483,9 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
     <>
       <div className="tab-toolbar">
         <div>
-          <h2>Work Packages</h2>
+          <h2>실행 업무</h2>
           <p>
-            개인 To-do가 아닌 프로젝트의 상위 실행 단위와 진행 상태를 관리합니다.
+            인턴에게 맡길 구체적인 결과물 단위입니다. 담당자·기한·진행 상태를 관리합니다.
           </p>
         </div>
 
@@ -494,7 +494,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
             className="primary-button"
             onClick={handleNewTask}
           >
-            + Work Package 추가
+            + 실행 업무 추가
           </button>
         )}
       </div>
@@ -510,8 +510,8 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
           <div className="task-form-header">
             <h2>
               {editingTaskId
-                ? "Work Package 수정"
-                : "새 Work Package"}
+                ? "실행 업무 수정"
+                : "새 실행 업무"}
             </h2>
 
             <button
@@ -528,7 +528,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
             onSubmit={handleSubmit}
           >
             <label>
-              Work Package 제목 *
+              실행 업무 제목 *
               <input
                 value={title}
                 onChange={(event) =>
@@ -550,7 +550,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
 
             <div className="form-grid">
               <label>
-                프로젝트 영역 *
+                업무 영역 *
                 <select
                   value={workstreamId}
                   onChange={(event) =>
@@ -560,7 +560,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
                   }
                 >
                   <option value="">
-                    프로젝트 영역 선택
+                    업무 영역 선택
                   </option>
 
                   {workstreams.map((workstream) => (
@@ -658,7 +658,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
               </label>
             </div>
 
-            {editingTaskId && parentTaskId && <div className="notice-message">기존 상위 Work Package 관계는 보존됩니다. 신규 하위 Work Package 생성은 지원하지 않습니다.</div>}
+            {editingTaskId && parentTaskId && <div className="notice-message">기존 상위 실행 업무 관계는 보존됩니다. 신규 하위 실행 업무 생성은 지원하지 않습니다.</div>}
 
             <div className="form-grid">
               <label>
@@ -698,7 +698,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
                   ? "저장 중..."
                   : editingTaskId
                     ? "수정 저장"
-                    : "Work Package 생성"}
+                    : "실행 업무 생성"}
               </button>
             </div>
           </form>
@@ -709,7 +709,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
         <section className="panel">
           <div className="empty-state large">
             <strong>
-              Work Package 데이터를 불러오는 중입니다.
+              실행 업무 데이터를 불러오는 중입니다.
             </strong>
           </div>
         </section>
@@ -717,10 +717,10 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
         <section className="panel">
           <div className="empty-state large">
             <strong>
-              등록된 Work Package가 없습니다.
+              등록된 실행 업무가 없습니다.
             </strong>
             <p>
-              프로젝트 영역을 상위 실행 단위로 구체화해보세요.
+              먼저 업무 영역을 만들고, 그 안에 인턴이 수행할 실행 업무를 등록해보세요.
             </p>
           </div>
         </section>
@@ -757,12 +757,12 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
               >
                 <div className="task-workstream-header">
                   <div>
-                    <span>WORKSTREAM</span>
+                    <span>업무 영역</span>
                     <h3>{workstream.name}</h3>
                   </div>
 
                   <strong>
-                    {workstreamTasks.length} Work Packages
+                    실행 업무 {workstreamTasks.length}개
                   </strong>
                 </div>
 

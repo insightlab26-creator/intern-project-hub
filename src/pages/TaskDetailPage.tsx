@@ -31,7 +31,7 @@ export default function TaskDetailPage() {
       ]);
       setData({ task, project, streams, interns, updates });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Work Package를 불러오지 못했습니다.");
+      setError(e instanceof Error ? e.message : "실행 업무를 불러오지 못했습니다.");
     } finally { setLoading(false); }
   }, [taskId]);
 
@@ -58,13 +58,13 @@ export default function TaskDetailPage() {
     finally { setSaving(false); }
   };
 
-  if (loading && !data) return <ScreenState kind="loading" title="Work Package를 불러오는 중입니다." />;
+  if (loading && !data) return <ScreenState kind="loading" title="실행 업무를 불러오는 중입니다." />;
   if (error && !data) return <ScreenState kind="error" title={error} onRetry={load} />;
-  if (!data) return <ScreenState kind="empty" title="Work Package를 찾을 수 없습니다." />;
+  if (!data) return <ScreenState kind="empty" title="실행 업무를 찾을 수 없습니다." />;
   const { task, project, streams, interns, updates } = data;
 
   return <>
-    <Link className="back-button" to="/tasks">← Work Packages</Link>
+    <Link className="back-button" to="/tasks">← 실행 업무</Link>
     <header className="page-header"><p className="eyebrow">{project.code}</p><h1>{task.title}</h1><p>{task.description || "등록된 설명이 없습니다."}</p></header>
     {error && <ScreenState kind="error" title={error} />}
     <section className="detail-grid">

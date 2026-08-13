@@ -8,7 +8,7 @@ const date=(value:unknown)=>value?text(value):"-";
 
 export async function getReport(kind:ReportKind,filters:ReportFilters):Promise<ReportRow[]>{
   const[projectsResult,tasksResult,assigneesResult,internsResult,reviewsResult]=await Promise.all([
-    supabase.from("projects").select("id,code,name,project_type,status,current_stage,start_date,target_end_date,next_review_date,field"),
+    supabase.from("projects").select("id,code,name,project_type,status,current_stage,start_date,target_end_date,field"),
     supabase.from("tasks").select("id,project_id,title,status,priority,start_date,due_date"),
     supabase.from("task_assignees").select("task_id,intern_id"),
     supabase.from("interns").select("id,name,cohort,status"),

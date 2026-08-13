@@ -27,7 +27,7 @@
 
 ## 3. Task 관계 규칙
 
-이 절의 `Task`는 DB와 내부 코드의 호환 명칭이다. 사용자 화면에서는 개인 To-do와 구분하기 위해 `Work Package`로 표시하며, 적용 사례 조사·서비스 시나리오 설계·발표자료 제작처럼 Project 결과에 직접 연결되는 상위 실행 단위로 등록한다. 회의에서 나온 세부 Action Item은 Loop/Planner에서 관리한다.
+이 절의 `Task`는 DB와 내부 코드의 호환 명칭이다. 사용자 화면에서는 개인 To-do와 구분하기 위해 `실행 업무`로 표시하며, 적용 사례 조사·서비스 시나리오 설계·발표자료 제작처럼 Project 결과에 직접 연결되는 결과물 단위로 등록한다. `Workstream`은 이러한 실행 업무를 묶는 `업무 영역`으로 표시한다. 회의에서 나온 세부 Action Item은 Loop/Planner에서 관리한다.
 
 - Task는 정확히 하나의 Project와 Workstream에 속한다.
 - Task의 Workstream은 같은 `project_id`를 가져야 한다.

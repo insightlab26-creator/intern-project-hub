@@ -71,7 +71,7 @@ Auth 사용자 생성 trigger가 profile을 만든다. profile 삭제은 Auth �
 
 ### projects
 
-기존 기본 정보에 `project_type`, 목적·배경·기대 결과·분야·현재 단계, `next_review_date`, Teams 폴더 URL, 키워드와 운영 담당자를 추가한다. Project 상태는 검토·수정·중단 흐름을 포함한다.
+기존 기본 정보에 `project_type`, 목적·배경·분야·현재 작업 단계, Teams 폴더 URL, 키워드와 운영 담당자를 추가한다. Project 상태는 검토·수정·중단 흐름을 포함한다. 과거 `expected_outcome` 데이터는 호환 목적으로 보존하지만 사용자 화면에서는 목적을 사용하며, 사용되지 않던 `next_review_date`는 신규 migration으로 제거한다.
 
 ### review_gates
 
@@ -91,7 +91,7 @@ Project 또는 Deliverable 중 정확히 하나를 대상으로 `REVISE / KEEP /
 
 `project_id`, `workstream_id`, nullable `parent_task_id`, 제목·설명, 상태·우선순위, 기간, `sort_order`와 감사 컬럼을 가진다.
 
-`tasks`는 기존 데이터와 RPC 호환을 위한 물리 명칭이다. 사용자-facing 도메인에서는 개인 To-do가 아닌 `Work Package`로 표시한다. `workstreams`는 Work Package의 프로젝트 단계/업무 영역으로 재사용하므로 이번 의미 전환에는 schema migration이 없다.
+`tasks`는 기존 데이터와 RPC 호환을 위한 물리 명칭이며 사용자 화면에서는 인턴에게 맡기는 구체적인 결과물 단위인 `실행 업무`로 표시한다. `workstreams`는 실행 업무를 주제나 단계별로 묶는 `업무 영역`으로 표시한다. 물리 테이블과 관계는 그대로 재사용하므로 이 용어 변경에는 schema migration이 없다.
 
 - Project 삭제: cascade
 - Workstream 삭제: restrict
