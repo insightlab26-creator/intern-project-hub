@@ -416,7 +416,7 @@ function TasksTab({ projectId, onTaskSaved }: TasksTabProps) {
 
                 <button
                   type="button"
-                  className="edit-button"
+                  className="edit-button compact-item-edit-button"
                   onClick={() =>
                     handleEditTask(task)
                   }
