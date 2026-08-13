@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.111.0";
 
 declare const Deno: { env: { get(name: string): string | undefined }; serve(handler: (request: Request) => Response | Promise<Response>): void };
 
-type AppRole = "ADMIN" | "INTERN" | "VIEWER";
+type AppRole = "ADMIN" | "MANAGER" | "INTERN" | "VIEWER";
 type UserStatus = "ACTIVE" | "INACTIVE";
 type RequestBody = {
   action?: "invite" | "password-reset" | "set-status";
@@ -20,7 +20,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 const json = (body: Record<string, unknown>, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-const allowedRoles: AppRole[] = ["ADMIN", "INTERN", "VIEWER"];
+const allowedRoles: AppRole[] = ["ADMIN", "MANAGER", "INTERN", "VIEWER"];
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });

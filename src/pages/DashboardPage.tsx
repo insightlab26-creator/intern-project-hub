@@ -22,7 +22,7 @@ export default function DashboardPage({ profile }: { profile: UserProfile }) {
     try {
       setLoading(true);
       setError("");
-      const [nextSummary, nextWidgets] = await Promise.all([getDashboardSummary(), getDashboardWidgets()]);
+      const [nextSummary, nextWidgets] = await Promise.all([getDashboardSummary(profile.global_role), profile.global_role === "ADMIN" ? getDashboardWidgets() : Promise.resolve(DEFAULT_DASHBOARD_WIDGETS)]);
       setSummary(nextSummary);
       setWidgetKeys(nextWidgets);
     } catch (caught) {
@@ -30,7 +30,7 @@ export default function DashboardPage({ profile }: { profile: UserProfile }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [profile.global_role]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, [load]);
@@ -45,7 +45,7 @@ export default function DashboardPage({ profile }: { profile: UserProfile }) {
   const saveWidgets = async () => { try { setSavingWidgets(true); setError(""); await saveDashboardWidgets(widgetKeys); setEditingWidgets(false); } catch (caught) { setError(caught instanceof Error ? caught.message : "Dashboard 설정을 저장하지 못했습니다."); } finally { setSavingWidgets(false); } };
 
   return <div className="dashboard-page">
-    <div className="dashboard-controlbar"><Link className="dashboard-search-shortcut" to="/search"><span aria-hidden="true" />검색...<kbd>⌘K</kbd></Link><div /><button className="secondary-button" onClick={() => setEditingWidgets((current) => !current)}>{editingWidgets ? "설정 닫기" : "지표 설정"}</button><Link className="dashboard-new-task" to="/tasks">+ 새 업무</Link></div>
+    <div className="dashboard-controlbar">{profile.global_role === "ADMIN" ? <Link className="dashboard-search-shortcut" to="/search"><span aria-hidden="true" />검색...<kbd>⌘K</kbd></Link> : <div />}<div />{profile.global_role === "ADMIN"&&<button className="secondary-button" onClick={() => setEditingWidgets((current) => !current)}>{editingWidgets ? "설정 닫기" : "지표 설정"}</button>}<Link className="dashboard-new-task" to="/tasks">+ 새 업무</Link></div>
     <header className="dashboard-titlebar">
       <div>
         <h1>대시보드</h1>

@@ -1,5 +1,6 @@
 import { supabase } from "../supabase";
 import type { DashboardProjectItem, DashboardSummary, DashboardTaskItem, DashboardTeamLoad, ProjectStatus, ProjectType, TaskPriority, TaskStatus } from "../types/domain";
+import type { AppRole } from "./authService";
 
 type TaskRow = { id:string;project_id:string;title:string;status:TaskStatus;priority:TaskPriority;start_date:string|null;due_date:string|null;updated_at:string };
 type ProjectRow = { id:string;name:string;status:ProjectStatus;project_type:ProjectType;target_end_date:string|null;next_review_date:string|null;current_stage:string };
@@ -9,16 +10,17 @@ type InternRow = { id:string;name:string;status:string };
 const day = (date: Date) => date.toISOString().slice(0, 10);
 function weekBounds() { const now=new Date(),weekday=(now.getDay()+6)%7,monday=new Date(now);monday.setDate(now.getDate()-weekday);const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);return{start:day(monday),end:day(sunday)}; }
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
+export async function getDashboardSummary(role: AppRole = "ADMIN"): Promise<DashboardSummary> {
+  const adminOnly = role === "ADMIN";
   const [tasksResult,projectsResult,assigneesResult,internsResult,programsResult,deliverablesResult,notesResult,reviewsResult] = await Promise.all([
     supabase.from("tasks").select("id,project_id,title,status,priority,start_date,due_date,updated_at").order("updated_at",{ascending:false}),
     supabase.from("projects").select("id,name,status,project_type,target_end_date,next_review_date,current_stage"),
     supabase.from("task_assignees").select("task_id,intern_id"),
     supabase.from("interns").select("id,name,status"),
-    supabase.from("programs").select("id,status"),
+    adminOnly ? supabase.from("programs").select("id,status") : Promise.resolve({data:[],error:null}),
     supabase.from("deliverables").select("id,status"),
-    supabase.from("manager_notes").select("id,status"),
-    supabase.from("intern_reviews").select("id,status"),
+    adminOnly ? supabase.from("manager_notes").select("id,status") : Promise.resolve({data:[],error:null}),
+    adminOnly ? supabase.from("intern_reviews").select("id,status") : Promise.resolve({data:[],error:null}),
   ]);
   const results=[tasksResult,projectsResult,assigneesResult,internsResult,programsResult,deliverablesResult,notesResult,reviewsResult];
   const failed=results.find((result)=>result.error);

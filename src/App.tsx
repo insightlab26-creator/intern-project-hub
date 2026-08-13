@@ -20,6 +20,7 @@ import ReportsPage from "./pages/ReportsPage";
 import ScreenState from "./components/ScreenState";
 import PasswordToggle from "./components/PasswordToggle";
 import { getCurrentSession, getUserProfile, signIn, signOut, type UserProfile } from "./services/authService";
+import { isControlTowerRole } from "./utils/permissions";
 import "./App.css";
 
 const menuGroups = [
@@ -28,6 +29,11 @@ const menuGroups = [
   { title: "KNOWLEDGE", items: [{ name: "Documents", path: "/documents" }] },
   { title: "OPERATIONS", items: [{ name: "Programs", path: "/programs" }, { name: "Interns", path: "/interns" }, { name: "Intern Reviews", path: "/intern-reviews" }] },
   { title: "SYSTEM", items: [{ name: "Users", path: "/users" }, { name: "Audit Logs", path: "/audit-logs" }] },
+];
+const managerMenuGroups = [
+  { items: [{ name: "Dashboard", path: "/" }] },
+  { title: "CONTROL TOWER", items: [{ name: "Projects", path: "/projects" }, { name: "Work Packages", path: "/tasks" }, { name: "Calendar", path: "/calendar" }] },
+  { title: "KNOWLEDGE", items: [{ name: "Documents", path: "/documents" }] },
 ];
 
 export default function App() {
@@ -44,14 +50,14 @@ export default function App() {
   return <div className="app-shell">
     <aside className="sidebar">
       <div className="brand"><img className="brand-logo" src="/bx-intern-logo.png" alt="BX Intern" /><strong>BX Intern Idea Lab</strong></div>
-      <nav className="sidebar-nav">{profile.global_role === "ADMIN" && menuGroups.map((group, index) => <div className={group.title ? "menu-group menu-group-nested" : "menu-group"} key={index}>{group.title && <p className="menu-title">{group.title}</p>}{group.items.map((item) => <NavLink key={item.path} end={item.path === "/"} className={({ isActive }) => isActive ? "menu-button active" : "menu-button"} to={item.path}><span>{item.name}</span></NavLink>)}</div>)}</nav>
+      <nav className="sidebar-nav">{(profile.global_role === "ADMIN" ? menuGroups : profile.global_role === "MANAGER" ? managerMenuGroups : []).map((group, index) => <div className={group.title ? "menu-group menu-group-nested" : "menu-group"} key={index}>{group.title && <p className="menu-title">{group.title}</p>}{group.items.map((item) => <NavLink key={item.path} end={item.path === "/"} className={({ isActive }) => isActive ? "menu-button active" : "menu-button"} to={item.path}><span>{item.name}</span></NavLink>)}</div>)}</nav>
     </aside>
     <div className="workspace">
       <header className="app-topbar">
         <div className="topbar-user"><span className="topbar-avatar">{profile.display_name.slice(0, 1)}</span><div><strong>{profile.display_name}</strong><span>{profile.global_role}</span></div></div>
         <button className="topbar-logout" onClick={logout}>로그아웃</button>
       </header>
-      <main className="main-content">{profile.global_role !== "ADMIN" ? <ScreenState kind="empty" title="접근 가능한 기능이 없습니다." /> : <Routes><Route path="/" element={<DashboardPage profile={profile} />} /><Route path="/search" element={<GlobalSearchPage />} /><Route path="/reports" element={<ReportsPage />} /><Route path="/projects" element={<ProjectsPage />} /><Route path="/projects/:projectId" element={<ProjectDetailPage />} /><Route path="/tasks" element={<TasksPage />} /><Route path="/tasks/review" element={<TasksPage reviewOnly />} /><Route path="/tasks/:taskId" element={<TaskDetailPage />} /><Route path="/calendar" element={<CalendarPage />} /><Route path="/plan-import" element={<Navigate to="/projects" replace />} /><Route path="/programs" element={<ProgramsPage />} /><Route path="/programs/:programId" element={<ProgramDetailPage />} /><Route path="/interns" element={<InternsPage />} /><Route path="/intern-reviews" element={<InternReviewsPage />} /><Route path="/kpis" element={<Navigate to="/projects" replace />} /><Route path="/documents" element={<DocumentsPage />} /><Route path="/resources" element={<Navigate to="/documents" replace />} /><Route path="/deliverables" element={<Navigate to="/documents" replace />} /><Route path="/decisions" element={<Navigate to="/projects" replace />} /><Route path="/manager-notes" element={<Navigate to="/" replace />} /><Route path="/users" element={<UsersPage />} /><Route path="/audit-logs" element={<AuditLogsPage />} /><Route path="/data-cleanup" element={<DataCleanupPage />} /><Route path="/:placeholder" element={<Placeholder />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>}</main>
+      <main className="main-content">{!isControlTowerRole(profile.global_role) ? <ScreenState kind="empty" title="접근 가능한 기능이 없습니다." /> : <Routes><Route path="/" element={<DashboardPage profile={profile} />} /><Route path="/search" element={profile.global_role === "ADMIN" ? <GlobalSearchPage /> : <Navigate to="/" replace />} /><Route path="/reports" element={profile.global_role === "ADMIN" ? <ReportsPage /> : <Navigate to="/" replace />} /><Route path="/projects" element={<ProjectsPage profile={profile} />} /><Route path="/projects/:projectId" element={<ProjectDetailPage />} /><Route path="/tasks" element={<TasksPage />} /><Route path="/tasks/review" element={<TasksPage reviewOnly />} /><Route path="/tasks/:taskId" element={<TaskDetailPage />} /><Route path="/calendar" element={<CalendarPage />} /><Route path="/plan-import" element={<Navigate to="/projects" replace />} /><Route path="/programs" element={profile.global_role === "ADMIN" ? <ProgramsPage /> : <Navigate to="/" replace />} /><Route path="/programs/:programId" element={profile.global_role === "ADMIN" ? <ProgramDetailPage /> : <Navigate to="/" replace />} /><Route path="/interns" element={profile.global_role === "ADMIN" ? <InternsPage /> : <Navigate to="/" replace />} /><Route path="/intern-reviews" element={profile.global_role === "ADMIN" ? <InternReviewsPage /> : <Navigate to="/" replace />} /><Route path="/kpis" element={<Navigate to="/projects" replace />} /><Route path="/documents" element={<DocumentsPage />} /><Route path="/resources" element={<Navigate to="/documents" replace />} /><Route path="/deliverables" element={<Navigate to="/documents" replace />} /><Route path="/decisions" element={<Navigate to="/projects" replace />} /><Route path="/manager-notes" element={<Navigate to="/" replace />} /><Route path="/users" element={profile.global_role === "ADMIN" ? <UsersPage /> : <Navigate to="/" replace />} /><Route path="/audit-logs" element={profile.global_role === "ADMIN" ? <AuditLogsPage /> : <Navigate to="/" replace />} /><Route path="/data-cleanup" element={profile.global_role === "ADMIN" ? <DataCleanupPage /> : <Navigate to="/" replace />} /><Route path="/:placeholder" element={<Placeholder />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>}</main>
     </div>
   </div>;
 }

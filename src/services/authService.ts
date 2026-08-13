@@ -1,7 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../supabase";
 
-export type AppRole = "ADMIN" | "INTERN" | "VIEWER";
+export type AppRole = "ADMIN" | "MANAGER" | "INTERN" | "VIEWER";
 export type UserStatus = "ACTIVE" | "INACTIVE";
 export type InviteUserInput = {
   email: string;

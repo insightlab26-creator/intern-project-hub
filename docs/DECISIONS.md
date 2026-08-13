@@ -105,3 +105,9 @@
 **결정:** `BX Intern UI Redesign`의 단일 HTML 시안을 기준으로 밝은 사이드바, BX 로고, Manrope/Sora 타이포그래피, 파란 포인트와 둥근 카드 중심의 공통 UI를 적용한다.
 
 **독립성:** 디자인 폴더는 참고 자료로만 사용한다. 런타임에 필요한 로고는 `public/bx-intern-logo.png`로 복사하고 애플리케이션 코드에서 디자인 폴더의 HTML, 스크립트와 업로드 자산을 참조하지 않는다.
+
+## 2026-08-13 — Project 범위 인턴 관리자 역할
+
+**결정:** `MANAGER` 역할을 추가하고 기존 `projects.operator_id`를 담당 Project 권한 경계로 사용한다. ADMIN은 사이트 전체를 관리하고 운영 담당자를 지정하며, MANAGER는 담당 Project의 Work Package, 참여 인턴, 진행 기록, Documents와 Review를 운영한다.
+
+**경계:** MANAGER는 Project 생성·담당자 변경, 사용자·프로그램·평가·감사·삭제 기능에 접근하지 않는다. 별도 인수인계 워크플로는 만들지 않고 Project의 기존 맥락과 기록을 다음 관리자가 이어서 사용한다.

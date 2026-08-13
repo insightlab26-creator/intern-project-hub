@@ -11,7 +11,7 @@ import {
   type UserStatus,
 } from "../services/authService";
 
-const roleLabels: Record<AppRole, string> = { ADMIN: "관리자", INTERN: "인턴", VIEWER: "조회자" };
+const roleLabels: Record<AppRole, string> = { ADMIN: "총괄 관리자", MANAGER: "인턴 관리자", INTERN: "인턴", VIEWER: "조회자" };
 const statusLabels: Record<UserStatus, string> = { ACTIVE: "활성", INACTIVE: "종료" };
 const emptyInvite = { email: "", displayName: "", role: "VIEWER" as AppRole };
 

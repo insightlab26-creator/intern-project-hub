@@ -58,7 +58,10 @@
 
 ## 6. 권한 규칙
 
-- 현재 DB 구현은 profiles의 본인 조회와 ADMIN 관리, 핵심 운영 테이블의 ADMIN 접근만 제공한다.
+- ADMIN은 사이트 전체 데이터와 사용자·권한·감사·삭제를 관리하고 Project의 `operator_id`를 지정한다.
+- 활성 MANAGER는 `operator_id`가 본인인 Project와 그 Project의 Workstream, Work Package, 담당 관계, 진행 기록, Documents, Review와 Project 멤버를 관리한다.
+- MANAGER는 Project를 생성하거나 운영 담당자를 변경할 수 없으며 Users, Programs, Intern Reviews, Audit Logs와 Data Cleanup에 접근하지 않는다.
+- MANAGER는 담당 Project에 참여 인턴을 연결할 수 있도록 인턴 목록을 조회할 수 있지만 인턴 기본 이력을 직접 수정하지 않는다.
 - INTERN과 VIEWER의 구체적인 읽기 및 쓰기 범위는 아직 확정·구현되지 않았다.
 - UI에서 버튼을 숨기는 것만으로 권한을 보장하지 않으며 RLS가 최종 권한 경계다.
 - RLS 완화는 데이터 노출 범위를 바꾸므로 사전 승인이 필요하다.

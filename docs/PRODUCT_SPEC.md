@@ -22,7 +22,8 @@ Intern Project Hub는 인턴 프로그램의 업무, 산출물, 의사결정, �
 
 | 역할 | 목적 | 현재 구현 범위 |
 |---|---|---|
-| ADMIN | 시스템 및 인턴 운영 관리 | 로그인, 전체 핵심 데이터 조회·생성, Task 수정 |
+| ADMIN | 사이트 총괄 관리 | 전체 데이터, 사용자·권한·감사·삭제 관리와 Project 운영 담당자 지정 |
+| MANAGER | 인턴과 담당 Project 운영 | 담당 Project의 Work Package, 참여 인턴, 진행 기록, Documents와 Review 관리 |
 | INTERN | 배정 업무 수행과 진행 기록 | 역할 값과 로그인만 존재하며 데이터 RLS는 아직 미완성 |
 | VIEWER | 허용된 운영 정보 조회 | 역할 값과 로그인만 존재하며 데이터 RLS는 아직 미완성 |
 
@@ -35,7 +36,7 @@ Intern Project Hub는 인턴 프로그램의 업무, 산출물, 의사결정, �
 - Project Review의 결정 요약·다음 조치·Teams 회의록 링크 기록
 
 - Supabase 이메일/비밀번호 로그인, 로그아웃과 세션 복원
-- `profiles` 기반 `ADMIN / INTERN / VIEWER` 역할 및 `ACTIVE / INACTIVE` 확인
+- `profiles` 기반 `ADMIN / MANAGER / INTERN / VIEWER` 역할 및 `ACTIVE / INACTIVE` 확인
 - Project 목록·생성·수정·상태 변경과 URL 상세 진입
 - 프로젝트별 Workstream 목록·생성·수정·정렬·상태 변경
 - Intern 목록·등록·수정과 종료 상태 처리

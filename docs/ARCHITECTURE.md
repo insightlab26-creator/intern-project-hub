@@ -63,7 +63,7 @@ React Router의 URL route로 Dashboard, Project/Task 목록과 상세, Interns�
 | id | uuid PK, auth.users FK, cascade | Auth 사용자 ID |
 | email | text nullable | 이메일 |
 | display_name | text not null | 표시 이름 |
-| global_role | app_role, default VIEWER | ADMIN/INTERN/VIEWER |
+| global_role | app_role, default VIEWER | ADMIN/MANAGER/INTERN/VIEWER |
 | status | user_status, default ACTIVE | 계정 상태 |
 | created_at / updated_at | timestamptz | 생성·수정 시각 |
 
@@ -144,6 +144,8 @@ Project·Intern·Task를 대상으로 하는 ADMIN 전용 민감 운영 기록�
 - `handle_new_user`: Auth 사용자 생성 후 기본 VIEWER/ACTIVE profile 생성
 - `set_updated_at`: 주요 테이블 수정 시 timestamp 갱신
 - `is_admin`: 현재 사용자가 ACTIVE ADMIN인지 확인
+- `is_manager`: 현재 사용자가 ACTIVE MANAGER인지 확인
+- `can_manage_project`: ADMIN 또는 해당 Project의 활성 MANAGER인지 확인
 - `validate_task_relationships`: Project/Workstream/부모 및 순환 관계 검증
 - `create_task_with_assignees`: Task와 여러 담당자 원자적 생성
 - `update_task_with_assignees`: Task 수정과 여러 담당자 원자적 교체
@@ -166,11 +168,13 @@ Task write 함수는 security invoker여서 호출자의 RLS를 적용한다. �
 모든 현재 public 테이블에 RLS가 활성화되어 있다.
 
 - profiles: 본인 조회 또는 ADMIN 조회, ADMIN 수정
-- projects/workstreams/interns/tasks/task_assignees, 프로그램 관계와 task_updates: 현재 ADMIN만 조회·작성 가능
+- ADMIN은 전체 운영 테이블에 접근한다.
+- MANAGER는 `projects.operator_id` 기준 담당 Project와 하위 Workstream, Task, 담당자, 진행 기록, Documents, Review와 Project 멤버에 접근한다.
+- Project 생성과 운영 담당자 변경, 사용자·프로그램·평가·감사·삭제 기능은 ADMIN 전용이다.
 - 일반 데이터 테이블에는 기본적으로 물리 삭제 권한이 없음
 - task_assignees는 ADMIN이 담당자 교체를 위해 insert/delete 가능
 
-현재 앱은 핵심 운영 메뉴를 ADMIN에게만 표시하여 ADMIN 전용 RLS와 일치시킨다. INTERN/VIEWER 권한은 추후 별도 권한표와 RLS로 확장한다.
+현재 앱은 ADMIN에게 전체 운영 메뉴를 표시하고 MANAGER에게 Dashboard, 담당 Projects, Work Packages, Calendar와 Documents만 표시한다. INTERN/VIEWER 권한은 추후 별도 권한표와 RLS로 확장한다.
 
 ## 7. Dashboard
 
@@ -181,7 +185,7 @@ Task write 함수는 security invoker여서 호출자의 RLS를 적용한다. �
 - REVIEW Task count
 - updated_at 기준 최근 Task 5건
 
-Dashboard는 전체·진행·완료율·마감 임박 지표, 주간 상태 분포, 담당자별 미완료 업무 분배, 최근 업무와 D-Day 알림을 제공한다. 검토 대기 목록은 ADMIN 영역에만 표시한다. 현재 핵심 운영 화면 전체가 ADMIN 전용이다.
+Dashboard는 전체·진행·완료율·마감 임박 지표, 주간 상태 분포, 담당자별 미완료 업무 분배, 최근 업무와 D-Day 알림을 제공한다. ADMIN은 전체 범위를, MANAGER는 RLS가 허용한 담당 Project 범위를 집계하며 검토 대기 관리자 영역은 ADMIN에게만 표시한다.
 
 ADMIN은 사전 정의된 운영·지식·KPI·평가 지표 카탈로그에서 Dashboard 카드를 선택하고 순서를 계정별로 저장한다. `dashboard_preferences`는 활성 ADMIN의 자기 설정만 허용한다. `search_preferences`는 사용자가 검색 대상 카테고리를 저장하며 실제 검색 데이터는 원본 테이블 RLS를 그대로 적용한다. 보고서는 브라우저에서 권한 내 데이터를 집계해 미리보기와 Excel/CSV 파일을 생성한다.
 
