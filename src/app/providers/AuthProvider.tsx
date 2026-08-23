@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { getCurrentSession, getUserProfile, signOut, type UserProfile } from "../../services/authService";
+import { getCurrentSession, getUserProfile, signIn, signOut, type UserProfile } from "../../services/authService";
 import { AuthContext } from "./authContext";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -26,6 +26,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
   }, []);
 
-  const value = useMemo(() => ({ profile, isLoading, signOutCurrentUser }), [profile, isLoading, signOutCurrentUser]);
+  const signInCurrentUser = useCallback(async (email: string, password: string) => {
+    const session = await signIn(email, password);
+    const nextProfile = await getUserProfile(session.user.id);
+    if (nextProfile.status !== "ACTIVE") {
+      await signOut();
+      throw new Error("비활성화된 계정입니다.");
+    }
+    setProfile(nextProfile);
+    return nextProfile;
+  }, []);
+
+  const value = useMemo(() => ({ profile, isLoading, signInCurrentUser, signOutCurrentUser }), [profile, isLoading, signInCurrentUser, signOutCurrentUser]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

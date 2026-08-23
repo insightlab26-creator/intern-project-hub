@@ -25,7 +25,7 @@ export default function ProjectTable({ projects, profilesById, metricsByProject,
     const manager = project.operatorId ? profilesById.get(project.operatorId) : undefined;
     const projectIsOverdue = isProjectOverdue(project);
     return { id: project.id, cells: {
-      project: <div className="v2-project-cell"><Link className="v2-project-link" to={`/v2/admin/projects/${project.id}`}>{project.name}</Link><span>{project.code}{project.field ? ` · ${project.field}` : ""}</span></div>,
+      project: <div className="v2-project-cell"><Link className="v2-project-link" to={`/admin/projects/${project.id}`}>{project.name}</Link><span>{project.code}{project.field ? ` · ${project.field}` : ""}</span></div>,
       status: <V2Badge variant={statusVariant(project.status)}>{PROJECT_STATUS_LABELS[project.status]}</V2Badge>,
       progress: percentage === null ? <span className="v2-muted">No tasks</span> : <div className="v2-progress"><div className="v2-progress__track"><span style={{ width: `${percentage}%` }} /></div><strong>{percentage}%</strong></div>,
       tasks: <div className="v2-task-count"><strong>{metrics.done} / {metrics.total}</strong>{metrics.overdue > 0 ? <V2Badge variant="danger">{metrics.overdue} overdue</V2Badge> : metrics.inReview > 0 ? <V2Badge variant="info">{metrics.inReview} in review</V2Badge> : null}</div>,
@@ -40,5 +40,5 @@ export default function ProjectTable({ projects, profilesById, metricsByProject,
 function ProjectTableView({ rows }: { rows: V2TableRow[] }) { return <V2Table columns={columns} rows={rows} emptyMessage="No projects match the current filters." />; }
 
 function ProjectRowActions({ project, onEdit }: { project: Project; onEdit: (project: Project) => void }) {
-  return <details className="v2-row-actions"><summary aria-label={`${project.name} actions`}>•••</summary><div className="v2-row-actions__menu" role="menu"><Link role="menuitem" to={`/v2/admin/projects/${project.id}`}>View details</Link><V2Button variant="ghost" type="button" role="menuitem" onClick={() => onEdit(project)}>Edit project</V2Button></div></details>;
+  return <details className="v2-row-actions"><summary aria-label={`${project.name} actions`}>•••</summary><div className="v2-row-actions__menu" role="menu"><Link role="menuitem" to={`/admin/projects/${project.id}`}>View details</Link><V2Button variant="ghost" type="button" role="menuitem" onClick={() => onEdit(project)}>Edit project</V2Button></div></details>;
 }

@@ -4,6 +4,7 @@ import type { UserProfile } from "../../services/authService";
 export type AuthContextValue = {
   profile: UserProfile | null;
   isLoading: boolean;
+  signInCurrentUser: (email: string, password: string) => Promise<UserProfile>;
   signOutCurrentUser: () => Promise<void>;
 };
 

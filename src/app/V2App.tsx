@@ -3,7 +3,7 @@ import { V2Router } from "./router/V2Router";
 import "./v2.css";
 
 /**
- * V2 entry point. V1 remains mounted for every route outside of /v2.
+ * Production application entry point. V1 source remains in the repository only.
  */
 export default function V2App() {
   return <div className="v2-root"><AuthProvider><V2Router /></AuthProvider></div>;
