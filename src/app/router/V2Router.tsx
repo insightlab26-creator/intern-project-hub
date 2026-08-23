@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import type { AppRole } from "../../services/authService";
 import { useAuth } from "../providers/authContext";
 import AdminLayout from "../../layouts/AdminLayout";
@@ -6,6 +6,7 @@ import ManagerLayout from "../../layouts/ManagerLayout";
 import InternLayout from "../../layouts/InternLayout";
 import PlaceholderPage from "../../pages/common/PlaceholderPage";
 import AdminProjectsPage from "../../pages/admin/AdminProjectsPage";
+import AdminProjectDetailPage from "../../pages/admin/AdminProjectDetailPage";
 import { RoleRouteGuard } from "./RoleRouteGuard";
 
 const adminPages = ["command-center", "review-queue", "interns", "programs", "documents", "reports", "activity", "users", "settings"];
@@ -26,8 +27,8 @@ export function V2Router() {
   return <Routes>
     <Route path="/v2" element={<RoleIndex />} />
     <Route element={<RoleRouteGuard allowedRoles={["ADMIN"]} />}>
-      <Route path="/v2/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} /><Route path="projects" element={<AdminProjectsPage />} />{adminPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
-      <Route path="/v2/projects/:projectId" element={<AdminLayout />}><Route index element={<PlaceholderPage title="Project Detail 준비 중" description="V2 Project Detail은 다음 단계에서 구현합니다." />} /></Route>
+      <Route path="/v2/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} /><Route path="projects" element={<AdminProjectsPage />} /><Route path="projects/:projectId" element={<AdminProjectDetailPage />} />{adminPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
+      <Route path="/v2/projects/:projectId" element={<LegacyProjectDetailRedirect />} />
     </Route>
     <Route element={<RoleRouteGuard allowedRoles={["MANAGER"]} />}>
       <Route path="/v2/manager" element={<ManagerLayout />}><Route index element={<Navigate to="home" replace />} />{managerPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="home" replace />} /></Route>
@@ -38,4 +39,9 @@ export function V2Router() {
     <Route path="/v2/unavailable" element={<PlaceholderPage title="V2 Viewer 영역은 준비 중입니다." description="VIEWER 역할의 정보 구조와 권한 범위는 후속 단계에서 정의합니다." />} />
     <Route path="*" element={<Navigate to="/v2" replace />} />
   </Routes>;
+}
+
+function LegacyProjectDetailRedirect() {
+  const { projectId = "" } = useParams();
+  return <Navigate to={`/v2/admin/projects/${projectId}`} replace />;
 }

@@ -5,6 +5,7 @@ export type ProjectTaskMetrics = {
   done: number;
   inReview: number;
   overdue: number;
+  hold: number;
 };
 
 export type PortfolioSummary = {
@@ -31,10 +32,11 @@ export function overdueDays(targetEndDate: string, today = todayAsDate()) {
 export function groupTaskMetrics(tasks: Task[], today = todayAsDate()) {
   const metricsByProject = new Map<string, ProjectTaskMetrics>();
   tasks.forEach((task) => {
-    const metrics = metricsByProject.get(task.projectId) ?? { total: 0, done: 0, inReview: 0, overdue: 0 };
+    const metrics = metricsByProject.get(task.projectId) ?? { total: 0, done: 0, inReview: 0, overdue: 0, hold: 0 };
     metrics.total += 1;
     if (task.status === "DONE") metrics.done += 1;
     if (task.status === "REVIEW") metrics.inReview += 1;
+    if (task.status === "HOLD") metrics.hold += 1;
     if (task.dueDate && parseDate(task.dueDate) < today && task.status !== "DONE") metrics.overdue += 1;
     metricsByProject.set(task.projectId, metrics);
   });
