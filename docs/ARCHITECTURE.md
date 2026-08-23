@@ -14,9 +14,11 @@ Firebase SDK와 `firebase.ts`는 현재 소스 및 패키지에서 발견되지 
 
 ```text
 src/
-├─ App.tsx                   인증, 메뉴, Dashboard와 최상위 화면 전환
+├─ main.tsx                 Production entry, V2App만 렌더링
+├─ app/                     AuthProvider와 정식 React Router route
+├─ App.tsx                  V1 source 보존용, runtime에서 미사용
 ├─ supabase.ts              Supabase browser client 생성
-├─ pages/                   Programs, Projects, Tasks, Interns와 상세 화면
+├─ pages/                   V2 ADMIN pages와 V1 보존 pages
 ├─ components/              Workstreams, Tasks와 Project members 탭
 ├─ constants/               공통 상태·우선순위 라벨
 ├─ services/                Auth 및 도메인별 Supabase 접근
@@ -42,7 +44,7 @@ supabase/migrations/
 └─ 20260817000100_user_workspace_preferences.sql
 ```
 
-React Router의 URL route로 Dashboard, Project/Task 목록과 상세, Interns를 전환한다. Project 탭은 query parameter로 유지되어 새로고침과 직접 진입을 지원한다.
+Production React Router는 `/admin`, `/manager`, `/intern` 정식 namespace를 사용한다. 기존 `/v2/*` URL은 대응되는 정식 URL로 redirect하며, V1 route는 runtime에서 render하지 않는다. Project 탭은 query parameter로 유지되어 새로고침과 직접 진입을 지원한다.
 
 공통 UI는 `App.tsx`의 App Shell과 `App.css`의 BX Intern 테마를 사용한다. 브랜드 로고는 `public/bx-intern-logo.png`에 포함되어 있으며 외부 디자인 참고 폴더 없이 빌드·실행된다.
 

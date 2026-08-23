@@ -1,0 +1,9 @@
+import { Link } from "react-router-dom";
+import { V2Card } from "../ui/V2Card";
+import { V2EmptyState } from "../ui/V2EmptyState";
+import { PanelHeader } from "./ProjectPortfolioPreview";
+import type { InternWorkItem } from "../../pages/admin/command-center/commandCenterMetrics";
+import type { Task } from "../../types/domain";
+
+const dueValue = (task: Task) => task.dueDate ? new Date(`${task.dueDate}T00:00:00`).getTime() : Number.MAX_SAFE_INTEGER;
+export default function InternWorkStatusPreview({ items, tasks }: { items: InternWorkItem[]; tasks: Task[] }) { return <V2Card className="v2-command-panel v2-command-people"><PanelHeader title="Who's Doing What" to="/admin/interns" label="View all people" />{items.length === 0 ? <V2EmptyState title="No interns" description="표시할 인턴이 없습니다." /> : <><div className="v2-command-people__head"><span>INTERN</span><span>CURRENT WORK</span><span>ASSIGNED / DONE</span><span>REVIEW</span><span>OVERDUE</span><span>PROGRESS</span></div><div className="v2-command-people__list">{items.slice(0, 5).map(({ intern, metrics }) => { const currentWork = tasks.filter((task) => task.assigneeInternIds.includes(intern.id) && task.status !== "DONE").sort((left, right) => dueValue(left) - dueValue(right))[0]; return <Link to={`/admin/interns?internId=${intern.id}`} className="v2-command-person" key={intern.id}><strong>{intern.name}</strong><span>{currentWork?.title ?? "No current work"}</span><span>{metrics.assigned} / {metrics.done}</span><span>{metrics.inReview || "—"}</span><span className={metrics.overdue ? "v2-danger-text" : ""}>{metrics.overdue || "—"}</span>{metrics.progress === null ? <span className="v2-muted">No tasks</span> : <div className="v2-progress"><div className="v2-progress__track"><span style={{ width: `${metrics.progress}%` }} /></div><strong>{metrics.progress}%</strong></div>}</Link>; })}</div></>}</V2Card>; }
