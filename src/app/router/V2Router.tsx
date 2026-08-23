@@ -7,9 +7,10 @@ import InternLayout from "../../layouts/InternLayout";
 import PlaceholderPage from "../../pages/common/PlaceholderPage";
 import AdminProjectsPage from "../../pages/admin/AdminProjectsPage";
 import AdminProjectDetailPage from "../../pages/admin/AdminProjectDetailPage";
+import AdminReviewQueuePage from "../../pages/admin/AdminReviewQueuePage";
 import { RoleRouteGuard } from "./RoleRouteGuard";
 
-const adminPages = ["command-center", "review-queue", "interns", "programs", "documents", "reports", "activity", "users", "settings"];
+const adminPages = ["command-center", "interns", "programs", "documents", "reports", "activity", "users", "settings"];
 const managerPages = ["home", "projects", "review-queue", "documents"];
 const internPages = ["home", "my-quests", "projects", "progress", "achievements", "ranking", "resources"];
 
@@ -27,7 +28,7 @@ export function V2Router() {
   return <Routes>
     <Route path="/v2" element={<RoleIndex />} />
     <Route element={<RoleRouteGuard allowedRoles={["ADMIN"]} />}>
-      <Route path="/v2/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} /><Route path="projects" element={<AdminProjectsPage />} /><Route path="projects/:projectId" element={<AdminProjectDetailPage />} />{adminPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
+      <Route path="/v2/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} /><Route path="projects" element={<AdminProjectsPage />} /><Route path="projects/:projectId" element={<AdminProjectDetailPage />} /><Route path="reviews" element={<AdminReviewQueuePage />} /><Route path="review-queue" element={<Navigate to="/v2/admin/reviews" replace />} />{adminPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
       <Route path="/v2/projects/:projectId" element={<LegacyProjectDetailRedirect />} />
     </Route>
     <Route element={<RoleRouteGuard allowedRoles={["MANAGER"]} />}>
