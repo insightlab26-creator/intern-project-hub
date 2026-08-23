@@ -5,9 +5,10 @@ import AdminLayout from "../../layouts/AdminLayout";
 import ManagerLayout from "../../layouts/ManagerLayout";
 import InternLayout from "../../layouts/InternLayout";
 import PlaceholderPage from "../../pages/common/PlaceholderPage";
+import AdminProjectsPage from "../../pages/admin/AdminProjectsPage";
 import { RoleRouteGuard } from "./RoleRouteGuard";
 
-const adminPages = ["command-center", "projects", "review-queue", "interns", "programs", "documents", "reports", "activity", "users", "settings"];
+const adminPages = ["command-center", "review-queue", "interns", "programs", "documents", "reports", "activity", "users", "settings"];
 const managerPages = ["home", "projects", "review-queue", "documents"];
 const internPages = ["home", "my-quests", "projects", "progress", "achievements", "ranking", "resources"];
 
@@ -25,7 +26,8 @@ export function V2Router() {
   return <Routes>
     <Route path="/v2" element={<RoleIndex />} />
     <Route element={<RoleRouteGuard allowedRoles={["ADMIN"]} />}>
-      <Route path="/v2/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} />{adminPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
+      <Route path="/v2/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} /><Route path="projects" element={<AdminProjectsPage />} />{adminPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
+      <Route path="/v2/projects/:projectId" element={<AdminLayout />}><Route index element={<PlaceholderPage title="Project Detail 준비 중" description="V2 Project Detail은 다음 단계에서 구현합니다." />} /></Route>
     </Route>
     <Route element={<RoleRouteGuard allowedRoles={["MANAGER"]} />}>
       <Route path="/v2/manager" element={<ManagerLayout />}><Route index element={<Navigate to="home" replace />} />{managerPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="home" replace />} /></Route>
