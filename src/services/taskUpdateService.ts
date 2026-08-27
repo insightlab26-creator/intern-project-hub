@@ -66,6 +66,24 @@ export async function getTaskUpdates(taskId: string): Promise<TaskUpdate[]> {
   return rows.map((row) => mapTaskUpdate(row, authorNames));
 }
 
+/** Inbox read: one pending-update query plus one batched author lookup, never per Task. */
+export async function getPendingTaskUpdates(): Promise<TaskUpdate[]> {
+  const { data, error } = await supabase.from("task_updates").select(columns)
+    .eq("review_status", "PENDING").order("occurred_on", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`검토 대기 진행 기록 조회 실패: ${error.message}`);
+  const rows = (data ?? []) as TaskUpdateRow[];
+  const authorIds = [...new Set(rows.map((row) => row.created_by).filter((id): id is string => Boolean(id)))];
+  const authorNames = new Map<string, string>();
+  if (authorIds.length > 0) {
+    const { data: profiles, error: profileError } = await supabase.from("profiles")
+      .select("id, display_name").in("id", authorIds);
+    if (profileError) throw new Error(`진행 기록 작성자 조회 실패: ${profileError.message}`);
+    ((profiles ?? []) as ProfileRow[]).forEach((profile) => authorNames.set(profile.id, profile.display_name));
+  }
+  return rows.map((row) => mapTaskUpdate(row, authorNames));
+}
+
 export async function createTaskUpdate(input: CreateTaskUpdateInput): Promise<void> {
   const userId = await currentUserId();
   const { error } = await supabase.from("task_updates").insert({
