@@ -1,0 +1,5 @@
+import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
+import AdminUsersPage from "./AdminUsersPage";
+vi.mock("../../services/authService",()=>({getUserProfiles:vi.fn().mockResolvedValue([{id:"u1",email:"j@example.com",display_name:"Jones",global_role:"INTERN",status:"ACTIVE"}]),inviteUser:vi.fn(),sendPasswordReset:vi.fn(),setUserAccountStatus:vi.fn(),updateUserProfile:vi.fn()}));vi.mock("../../services/internService",()=>({getInterns:vi.fn().mockResolvedValue([{id:"i1",name:"Jones Intern",userUid:"u1"}])}));vi.mock("../../app/providers/authContext",()=>({useAuth:()=>({profile:{id:"admin"}})}));describe("AdminUsersPage",()=>{it("shows profile and linked intern",async()=>{render(<MemoryRouter><AdminUsersPage/></MemoryRouter>);expect(await screen.findByText("Jones")).toBeInTheDocument();expect(screen.getByText("Jones Intern")).toBeInTheDocument();expect(screen.getByRole("button",{name:"+ Invite User"})).toBeInTheDocument()})})

@@ -17,10 +17,12 @@ import AdminTaskDetailPage from "../../pages/admin/AdminTaskDetailPage";
 import AdminDocumentsPage from "../../pages/admin/AdminDocumentsPage";
 import AdminActivityPage from "../../pages/admin/AdminActivityPage";
 import AdminReportsPage from "../../pages/admin/AdminReportsPage";
+import AdminUsersPage from "../../pages/admin/AdminUsersPage";
+import AdminSettingsPage from "../../pages/admin/AdminSettingsPage";
 import { RoleRouteGuard } from "./RoleRouteGuard";
 import V2LoginPage from "../../pages/common/V2LoginPage";
 
-const adminPages = ["documents", "users", "settings"];
+const adminPages = ["documents"];
 const managerPages = ["home", "projects", "review-queue", "documents"];
 const internPages = ["home", "my-quests", "projects", "progress", "achievements", "ranking", "resources"];
 
@@ -38,7 +40,7 @@ export function V2Router() {
   return <Routes>
     <Route path="/" element={<RoleIndex />} />
     <Route element={<RoleRouteGuard allowedRoles={["ADMIN"]} />}>
-      <Route path="/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} /><Route path="command-center" element={<AdminCommandCenterPage />} /><Route path="projects" element={<AdminProjectsPage />} /><Route path="projects/:projectId" element={<AdminProjectDetailPage />} /><Route path="tasks/:taskId" element={<AdminTaskDetailPage />} /><Route path="calendar" element={<AdminCalendarPage />} /><Route path="reviews" element={<AdminReviewQueuePage />} /><Route path="interns" element={<AdminInternsPage />} /><Route path="programs" element={<AdminProgramsPage />} /><Route path="programs/:programId" element={<AdminProgramDetailPage />} /><Route path="documents" element={<AdminDocumentsPage />} /><Route path="reports" element={<AdminReportsPage />} /><Route path="activity" element={<AdminActivityPage />} /><Route path="review-queue" element={<Navigate to="/admin/reviews" replace />} />{adminPages.filter((page) => page !== "documents").map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
+      <Route path="/admin" element={<AdminLayout />}><Route index element={<Navigate to="command-center" replace />} /><Route path="command-center" element={<AdminCommandCenterPage />} /><Route path="projects" element={<AdminProjectsPage />} /><Route path="projects/:projectId" element={<AdminProjectDetailPage />} /><Route path="tasks/:taskId" element={<AdminTaskDetailPage />} /><Route path="calendar" element={<AdminCalendarPage />} /><Route path="reviews" element={<AdminReviewQueuePage />} /><Route path="interns" element={<AdminInternsPage />} /><Route path="programs" element={<AdminProgramsPage />} /><Route path="programs/:programId" element={<AdminProgramDetailPage />} /><Route path="documents" element={<AdminDocumentsPage />} /><Route path="reports" element={<AdminReportsPage />} /><Route path="users" element={<AdminUsersPage />} /><Route path="settings" element={<AdminSettingsPage />} /><Route path="activity" element={<AdminActivityPage />} /><Route path="review-queue" element={<Navigate to="/admin/reviews" replace />} />{adminPages.filter((page) => page !== "documents").map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="command-center" replace />} /></Route>
     </Route>
     <Route element={<RoleRouteGuard allowedRoles={["MANAGER"]} />}>
       <Route path="/manager" element={<ManagerLayout />}><Route index element={<Navigate to="home" replace />} />{managerPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="home" replace />} /></Route>
