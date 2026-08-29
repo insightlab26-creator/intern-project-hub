@@ -11,7 +11,7 @@ import { V2PageHeader } from "../../components/ui/V2PageHeader";
 import { getUserProfiles, type UserProfile } from "../../services/authService";
 import { getDocuments } from "../../services/documentService";
 import { getInterns } from "../../services/internService";
-import { getPrograms, getProgramEnrollments } from "../../services/programService";
+import { getAllProgramEnrollments, getPrograms } from "../../services/programService";
 import { getProjects } from "../../services/projectService";
 import { getAllTasks } from "../../services/taskService";
 import type { DocumentLink, Intern, Program, Project, Task } from "../../types/domain";
@@ -24,7 +24,7 @@ export default function AdminCommandCenterPage() {
   const load = useCallback(async () => { try { setLoading(true); setError(""); const [projectItems, taskItems, internItems, programItems, profileItems] = await Promise.all([getProjects(), getAllTasks(), getInterns(), getPrograms(), getUserProfiles()]); setProjects(projectItems); setTasks(taskItems); setInterns(internItems); setPrograms(programItems); setProfiles(profileItems); } catch (caught) { setError(errorMessage(caught)); } finally { setLoading(false); } }, []);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => { const activePrograms = programs.filter((program) => program.status === "ACTIVE"); if (!activePrograms.length || activeEnrollments || enrollmentRequest.current) return; const request = (async () => { try { setEnrollmentError(""); const rows = await Promise.all(activePrograms.map(async (program) => [program.id, (await getProgramEnrollments(program.id)).filter((enrollment) => enrollment.status === "ACTIVE").length] as const)); setActiveEnrollments(new Map(rows)); } catch (caught) { setEnrollmentError(errorMessage(caught)); } finally { enrollmentRequest.current = null; } })(); enrollmentRequest.current = request; }, [activeEnrollments, programs]);
+  useEffect(() => { const activePrograms = programs.filter((program) => program.status === "ACTIVE"); if (!activePrograms.length || activeEnrollments || enrollmentRequest.current) return; const request = (async () => { try { setEnrollmentError(""); const rows = await getAllProgramEnrollments(); setActiveEnrollments(new Map(activePrograms.map((program) => [program.id, rows.filter((enrollment) => enrollment.programId === program.id && enrollment.status === "ACTIVE").length]))); } catch (caught) { setEnrollmentError(errorMessage(caught)); } finally { enrollmentRequest.current = null; } })(); enrollmentRequest.current = request; }, [activeEnrollments, programs]);
   useEffect(() => { if (loading || error || documents || documentsRequest.current) return; const request = (async () => { try { setDocumentsLoading(true); setDocumentsError(""); setDocuments(await getDocuments()); } catch (caught) { setDocumentsError(errorMessage(caught)); } finally { setDocumentsLoading(false); documentsRequest.current = null; } })(); documentsRequest.current = request; }, [documents, error, loading]);
   const metrics = useMemo(() => buildCommandCenterMetrics({ projects, tasks, interns, programs, profiles }), [interns, profiles, programs, projects, tasks]);
   if (loading) return <V2Card><V2EmptyState title="Loading Control Tower" description="주요 운영 상태를 불러오고 있습니다." /></V2Card>;

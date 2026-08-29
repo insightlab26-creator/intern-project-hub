@@ -11,7 +11,7 @@ import { V2PageHeader } from "../../components/ui/V2PageHeader";
 import { V2Select } from "../../components/ui/V2Select";
 import { getInterns } from "../../services/internService";
 import { getInternReviews } from "../../services/internReviewService";
-import { getPrograms, getProgramEnrollments, getProjectMembers } from "../../services/programService";
+import { getAllProgramEnrollments, getAllProjectMembers, getPrograms } from "../../services/programService";
 import { getProjects } from "../../services/projectService";
 import { getAllTasks } from "../../services/taskService";
 import type { Intern, InternReview, InternStatus, Program, ProgramEnrollment, Project, ProjectMember, Task } from "../../types/domain";
@@ -45,13 +45,13 @@ export default function AdminInternsPage() {
   }, [projects]);
   const loadProjectMembers = useCallback(() => {
     if (projectMembers || projectMembersRequest.current) return projectMembersRequest.current ?? Promise.resolve();
-    const request = (async () => { try { setProjectMembersLoading(true); setProjectMembersError(""); const projectItems = await loadProjects(); const rows = await Promise.all(projectItems.map(async (project) => [project.id, await getProjectMembers(project.id)] as const)); setProjectMembers(new Map(rows)); } catch (caught) { setProjectMembersError(errorMessage(caught, "프로젝트 참여 관계를 불러오지 못했습니다.")); } finally { setProjectMembersLoading(false); projectMembersRequest.current = null; } })();
+    const request = (async () => { try { setProjectMembersLoading(true); setProjectMembersError(""); const rows = await getAllProjectMembers(); setProjectMembers(new Map(rows.reduce((byProject, member) => { const current = byProject.get(member.projectId) ?? []; current.push(member); byProject.set(member.projectId, current); return byProject; }, new Map<string, ProjectMember[]>()))); } catch (caught) { setProjectMembersError(errorMessage(caught, "프로젝트 참여 관계를 불러오지 못했습니다.")); } finally { setProjectMembersLoading(false); projectMembersRequest.current = null; } })();
     projectMembersRequest.current = request;
     return request;
-  }, [loadProjects, projectMembers]);
+  }, [projectMembers]);
   const loadPrograms = useCallback(() => {
     if (enrollments || programsRequest.current) return programsRequest.current ?? Promise.resolve();
-    const request = (async () => { try { setProgramsLoading(true); setProgramsError(""); setEnrollmentsError(""); const programItems = await getPrograms(); const rows = await Promise.all(programItems.map(async (program) => [program.id, await getProgramEnrollments(program.id)] as const)); setPrograms(programItems); setEnrollments(new Map(rows)); } catch (caught) { setEnrollmentsError(errorMessage(caught, "프로그램 참여 관계를 불러오지 못했습니다.")); } finally { setProgramsLoading(false); programsRequest.current = null; } })();
+    const request = (async () => { try { setProgramsLoading(true); setProgramsError(""); setEnrollmentsError(""); const [programItems, rows] = await Promise.all([getPrograms(), getAllProgramEnrollments()]); setPrograms(programItems); setEnrollments(new Map(rows.reduce((byProgram, enrollment) => { const current = byProgram.get(enrollment.programId) ?? []; current.push(enrollment); byProgram.set(enrollment.programId, current); return byProgram; }, new Map<string, ProgramEnrollment[]>()))); } catch (caught) { setEnrollmentsError(errorMessage(caught, "프로그램 참여 관계를 불러오지 못했습니다.")); } finally { setProgramsLoading(false); programsRequest.current = null; } })();
     programsRequest.current = request;
     return request;
   }, [enrollments]);
