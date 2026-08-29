@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const from = vi.fn();
 const rpc = vi.fn();
-vi.mock("../supabase", () => ({ supabase: { from, rpc } }));
+const getUser = vi.fn();
+vi.mock("../supabase", () => ({ supabase: { from, rpc, auth: { getUser } } }));
 
 const update = {
   id: "update-1", task_id: "task-1", occurred_on: "2026-08-29", progress: "Progress", learning: "", blockers: "", next_plan: "", review_status: "PENDING", manager_feedback: "", created_at: "2026-08-29T09:00:00Z", updated_at: "2026-08-29T09:00:00Z", created_by: "author-1",
@@ -18,7 +19,18 @@ function mockUpdateQuery(rows: unknown[]) {
 }
 
 describe("Task Update author labels", () => {
-  beforeEach(() => { from.mockReset(); rpc.mockReset(); });
+  beforeEach(() => { from.mockReset(); rpc.mockReset(); getUser.mockReset(); });
+
+  it("creates an INTERN-safe PENDING payload with the authenticated author only", async () => {
+    const insert = vi.fn().mockResolvedValue({ error: null });
+    from.mockReturnValue({ insert });
+    getUser.mockResolvedValue({ data: { user: { id: "intern-profile-id" } }, error: null });
+    const { createTaskUpdate } = await import("./taskUpdateService");
+
+    await createTaskUpdate({ taskId: "task-1", occurredOn: "2026-08-29", progress: "  Progress  ", learning: "", blockers: "", nextPlan: "" });
+
+    expect(insert).toHaveBeenCalledWith({ task_id: "task-1", occurred_on: "2026-08-29", progress: "Progress", learning: "", blockers: "", next_plan: "", review_status: "PENDING", manager_feedback: "", created_by: "intern-profile-id", updated_by: "intern-profile-id" });
+  });
 
   it("uses one authorized batch RPC for task updates instead of querying profiles", async () => {
     mockUpdateQuery([update]);

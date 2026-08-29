@@ -108,6 +108,8 @@ export async function createTaskUpdate(input: CreateTaskUpdateInput): Promise<vo
     learning: input.learning.trim(),
     blockers: input.blockers.trim(),
     next_plan: input.nextPlan.trim(),
+    review_status: "PENDING",
+    manager_feedback: "",
     created_by: userId,
     updated_by: userId,
   });
