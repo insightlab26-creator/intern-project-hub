@@ -21,7 +21,11 @@ type TaskUpdateRow = {
   created_by: string | null;
 };
 
-type ProfileRow = { id: string; display_name: string };
+type TaskUpdateAuthorLabelRow = {
+  update_id: string;
+  author_id: string;
+  display_name: string;
+};
 
 const columns = "id, task_id, occurred_on, progress, learning, blockers, next_plan, review_status, manager_feedback, created_at, updated_at, created_by";
 
@@ -49,20 +53,38 @@ function mapTaskUpdate(row: TaskUpdateRow, authorNames: Map<string, string>): Ta
   };
 }
 
+/**
+ * Resolves labels by Task Update ID rather than profile ID. The database
+ * rechecks the Task → Project boundary for every returned label.
+ */
+async function resolveAuthorNames(rows: TaskUpdateRow[]): Promise<Map<string, string>> {
+  if (!rows.length) return new Map();
+
+  const { data, error } = await supabase.rpc("get_task_update_author_labels", {
+    p_update_ids: rows.map((row) => row.id),
+  });
+  if (error) {
+    // Keep authorized update content available; the UI's existing neutral
+    // unknown-author label makes the incomplete projection visible.
+    console.error("진행 기록 작성자 표시 이름 조회 실패:", error.message);
+    return new Map();
+  }
+
+  return new Map(
+    ((data ?? []) as TaskUpdateAuthorLabelRow[]).map((label) => [
+      label.author_id,
+      label.display_name,
+    ]),
+  );
+}
+
 export async function getTaskUpdates(taskId: string): Promise<TaskUpdate[]> {
   const { data, error } = await supabase.from("task_updates").select(columns)
     .eq("task_id", taskId).order("occurred_on", { ascending: false })
     .order("created_at", { ascending: false });
   if (error) throw new Error(`진행 기록 조회 실패: ${error.message}`);
   const rows = (data ?? []) as TaskUpdateRow[];
-  const authorIds = [...new Set(rows.map((row) => row.created_by).filter((id): id is string => Boolean(id)))];
-  const authorNames = new Map<string, string>();
-  if (authorIds.length > 0) {
-    const { data: profiles, error: profileError } = await supabase.from("profiles")
-      .select("id, display_name").in("id", authorIds);
-    if (profileError) throw new Error(`작성자 조회 실패: ${profileError.message}`);
-    ((profiles ?? []) as ProfileRow[]).forEach((profile) => authorNames.set(profile.id, profile.display_name));
-  }
+  const authorNames = await resolveAuthorNames(rows);
   return rows.map((row) => mapTaskUpdate(row, authorNames));
 }
 
@@ -73,14 +95,7 @@ export async function getPendingTaskUpdates(): Promise<TaskUpdate[]> {
     .order("created_at", { ascending: false });
   if (error) throw new Error(`검토 대기 진행 기록 조회 실패: ${error.message}`);
   const rows = (data ?? []) as TaskUpdateRow[];
-  const authorIds = [...new Set(rows.map((row) => row.created_by).filter((id): id is string => Boolean(id)))];
-  const authorNames = new Map<string, string>();
-  if (authorIds.length > 0) {
-    const { data: profiles, error: profileError } = await supabase.from("profiles")
-      .select("id, display_name").in("id", authorIds);
-    if (profileError) throw new Error(`진행 기록 작성자 조회 실패: ${profileError.message}`);
-    ((profiles ?? []) as ProfileRow[]).forEach((profile) => authorNames.set(profile.id, profile.display_name));
-  }
+  const authorNames = await resolveAuthorNames(rows);
   return rows.map((row) => mapTaskUpdate(row, authorNames));
 }
 
