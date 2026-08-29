@@ -12,7 +12,7 @@ describe("V2LoginPage", () => {
   it("submits the existing email and password auth contract", async () => {
     const signInCurrentUser = renderPage();
     expect(screen.getByText("Intern Program", { exact: false })).toBeInTheDocument();
-    expect(screen.getByText("Intern Project Hub · V2")).toBeInTheDocument();
+    expect(screen.getByText("Intern Project Hub")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "intern@example.com" } });
     fireEvent.change(screen.getByLabelText("Password"), { target: { value: "password" } });
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
