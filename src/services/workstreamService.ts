@@ -95,6 +95,20 @@ export async function getWorkstreams(
   );
 }
 
+/** Fetch workstream context for several already-authorized projects in one query. */
+export async function getWorkstreamsForProjects(projectIds: string[]): Promise<Workstream[]> {
+  if (projectIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from("workstreams")
+    .select(workstreamColumns)
+    .in("project_id", projectIds)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw new Error(`Workstream 목록 조회 실패: ${error.message}`);
+  return ((data ?? []) as WorkstreamRow[]).map(mapWorkstream);
+}
+
 export async function createWorkstream(
   input: CreateWorkstreamInput
 ): Promise<Workstream> {
