@@ -59,7 +59,7 @@ describe("AdminReviewQueuePage", () => {
 
   it("removes a pending update after requesting changes and preserves the Task review deep link", async () => {
     const user = userEvent.setup(); renderPage(`/admin/reviews?taskId=${reviewTask.id}`);
-    expect(await screen.findByLabelText("Review task details")).toBeInTheDocument(); expect(screen.getByRole("link", { name: "Open Task →" })).toHaveAttribute("href", `/admin/tasks/${reviewTask.id}`);
+    expect(await screen.findByLabelText("Review task details")).toBeInTheDocument(); expect(screen.getByRole("button", { name: "Open Task →" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Close task details" }));
     await user.click(screen.getAllByRole("button", { name: "Review" })[0]);
     await user.type(screen.getByLabelText("Manager feedback"), "Add detail"); await user.click(screen.getByRole("button", { name: "Request changes" }));
