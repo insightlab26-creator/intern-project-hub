@@ -102,6 +102,18 @@ export async function getInterns(): Promise<Intern[]> {
   return ((data ?? []) as InternRow[]).map(mapIntern);
 }
 
+/** Resolve the active INTERN record linked to the authenticated account. */
+export async function getCurrentIntern(): Promise<Intern | null> {
+  const userId = await getCurrentUserId();
+  const { data, error } = await supabase
+    .from("interns")
+    .select(internColumns)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw new Error(`현재 인턴 정보 조회 실패: ${error.message}`);
+  return data ? mapIntern(data as InternRow) : null;
+}
+
 export async function createIntern(
   input: CreateInternInput
 ): Promise<Intern> {

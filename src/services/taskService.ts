@@ -306,6 +306,11 @@ export async function getAllTasks(): Promise<Task[]> {
   return rows.map((row) => mapTask(row, maps));
 }
 
+/** Intent-revealing wrapper for INTERN screens; row scope is enforced by RLS. */
+export async function getMyAssignedTasks(): Promise<Task[]> {
+  return getAllTasks();
+}
+
 /**
  * ID로 Task 한 건을 조회한다.
  */
