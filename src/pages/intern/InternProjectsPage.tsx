@@ -8,7 +8,7 @@ import { V2EmptyState } from "../../components/ui/V2EmptyState";
 import { V2Input } from "../../components/ui/V2Input";
 import { V2PageHeader } from "../../components/ui/V2PageHeader";
 import { V2Select } from "../../components/ui/V2Select";
-import { PROJECT_STATUS_LABELS } from "../../constants/domainLabels";
+import { formatInternDate, internProjectStatusLabel, useInternLocale } from "../../i18n/internLocale";
 import { getCurrentIntern } from "../../services/internService";
 import { getProjects } from "../../services/projectService";
 import { getMyAssignedTasks } from "../../services/taskService";
@@ -35,10 +35,6 @@ function startOfToday() {
 
 function dueTime(value: string | null) {
   return value ? new Date(`${value}T00:00:00`).getTime() : Number.POSITIVE_INFINITY;
-}
-
-function formatDate(value: string | null) {
-  return value ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(`${value}T00:00:00`)) : "—";
 }
 
 function preview(value: string, limit = 180) {
@@ -85,6 +81,7 @@ function sortProjectItems(items: ProjectItem[]) {
 }
 
 export default function InternProjectsPage() {
+  const { locale, t } = useInternLocale();
   const [intern, setIntern] = useState<Intern | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -126,22 +123,22 @@ export default function InternProjectsPage() {
     }));
   }, [items, query, status]);
 
-  if (loading) return <V2Card><V2EmptyState title="Loading My Projects" description="배정된 프로젝트를 불러오고 있습니다." /></V2Card>;
-  if (profileMissing) return <V2Card><V2EmptyState title="Intern profile not linked" description="현재 로그인 계정에 연결된 인턴 프로필이 없습니다. ADMIN에게 연결을 요청해주세요." /></V2Card>;
-  if (error) return <section className="v2-intern-projects-page"><V2PageHeader eyebrow="MY PROJECTS" title="My Projects" description="Your assigned work, grouped by project." /><V2Card><V2EmptyState title="Unable to load your projects." description="잠시 후 다시 시도해주세요." action={<V2Button type="button" variant="secondary" onClick={() => void load()}>Retry</V2Button>} /></V2Card></section>;
+  if (loading) return <V2Card><V2EmptyState title={t("state.loadingProject")} description={t("projects.description")} /></V2Card>;
+  if (profileMissing) return <V2Card><V2EmptyState title={t("state.internMissing")} description={t("state.internMissingDescription")} /></V2Card>;
+  if (error) return <section className="v2-intern-projects-page"><V2PageHeader eyebrow={t("projects.eyebrow")} title={t("projects.title")} description={t("projects.description")} /><V2Card><V2EmptyState title={t("projects.loadError")} description={t("tasks.adjust")} action={<V2Button type="button" variant="secondary" onClick={() => void load()}>{t("common.retry")}</V2Button>} /></V2Card></section>;
 
   return <section className="v2-intern-projects-page">
-    <V2PageHeader eyebrow="MY PROJECTS" title="My Projects" description={`Projects you're contributing to, ${intern?.name ?? "Intern"}.`} />
-    <div className="v2-intern-projects-page__summary" aria-label="My project summary">
-      <SummaryMetric label="PROJECTS" value={summary.projects} />
-      <SummaryMetric label="ASSIGNED TASKS" value={summary.assigned} />
-      <SummaryMetric label="OVERDUE" value={summary.overdue} danger />
+    <V2PageHeader eyebrow={t("projects.eyebrow")} title={t("projects.title")} description={t("projects.descriptionWithName", { name: intern?.name ?? "Intern" })} />
+    <div className="v2-intern-projects-page__summary" aria-label={t("projects.summary")}>
+      <SummaryMetric label={t("common.project")} value={summary.projects} />
+      <SummaryMetric label={t("projects.assignedTasks")} value={summary.assigned} />
+      <SummaryMetric label={t("tasks.overdue")} value={summary.overdue} danger />
     </div>
     <div className="v2-intern-projects-page__filters">
-      <V2Input aria-label="Search projects" placeholder="Search projects…" value={query} onChange={(event) => setQuery(event.target.value)} />
-      <V2Select aria-label="Filter by project status" value={status} onChange={(event) => setStatus(event.target.value as "ALL" | ProjectStatus)}><option value="ALL">All statuses</option>{projectStatuses.map((item) => <option key={item} value={item}>{PROJECT_STATUS_LABELS[item]}</option>)}</V2Select>
+      <V2Input aria-label={t("projects.search")} placeholder={t("projects.search")} value={query} onChange={(event) => setQuery(event.target.value)} />
+      <V2Select aria-label={t("projects.filterStatus")} value={status} onChange={(event) => setStatus(event.target.value as "ALL" | ProjectStatus)}><option value="ALL">{t("projects.allStatuses")}</option>{projectStatuses.map((item) => <option key={item} value={item}>{internProjectStatusLabel(item, locale)}</option>)}</V2Select>
     </div>
-    {items.length === 0 ? <V2Card><V2EmptyState title="No projects yet." description="Projects will appear here when you're assigned work." /></V2Card> : visibleItems.length === 0 ? <V2Card><V2EmptyState title="No matching projects" description="검색어나 필터를 조정해보세요." /></V2Card> : <div className="v2-intern-projects-page__grid">{visibleItems.map((item) => <ProjectCard key={item.project.id} item={item} />)}</div>}
+    {items.length === 0 ? <V2Card><V2EmptyState title={t("projects.none")} description={t("projects.noneDescription")} /></V2Card> : visibleItems.length === 0 ? <V2Card><V2EmptyState title={t("projects.noMatch")} description={t("tasks.adjust")} /></V2Card> : <div className="v2-intern-projects-page__grid">{visibleItems.map((item) => <ProjectCard key={item.project.id} item={item} />)}</div>}
   </section>;
 }
 
@@ -150,10 +147,11 @@ function SummaryMetric({ label, value, danger = false }: { label: string; value:
 }
 
 function ProjectCard({ item }: { item: ProjectItem }) {
+  const { locale, t } = useInternLocale();
   const { project } = item;
   return <V2Card className={`v2-intern-projects-page__card${item.overdue ? " v2-intern-projects-page__card--overdue" : ""}`}>
-    <header><div><h2><Link to={`/intern/projects/${project.id}`}>{project.name}</Link></h2>{project.description && <p>{preview(project.description)}</p>}</div><V2Badge variant={statusVariant[project.status]}>{PROJECT_STATUS_LABELS[project.status]}</V2Badge></header>
-    <div className="v2-intern-projects-page__metrics" aria-label={`${project.name} task metrics`}><span><strong>{item.assigned}</strong> Assigned</span><span><strong>{item.done}</strong> Done</span><span><strong>{item.inProgress}</strong> In Progress</span></div>
-    <footer><span className={item.overdue ? "v2-intern-projects-page__overdue" : undefined}>{item.overdue ? `${item.overdue} Overdue` : "No overdue tasks"}</span><span>{item.nextDue ? `Next due ${formatDate(item.nextDue)}` : "No upcoming due"}</span></footer>
+    <header><div><h2><Link to={`/intern/projects/${project.id}`}>{project.name}</Link></h2>{project.description && <p>{preview(project.description)}</p>}</div><V2Badge variant={statusVariant[project.status]}>{internProjectStatusLabel(project.status, locale)}</V2Badge></header>
+    <div className="v2-intern-projects-page__metrics" aria-label={`${project.name} ${t("projects.assignedTasks")}`}><span>{locale === "ko" ? <><strong>{t("projects.assigned")}</strong> {item.assigned}</> : <><strong>{item.assigned}</strong> {t("projects.assigned")}</>}</span><span>{locale === "ko" ? <><strong>{t("projects.done")}</strong> {item.done}</> : <><strong>{item.done}</strong> {t("projects.done")}</>}</span><span>{locale === "ko" ? <><strong>{t("projects.inProgress")}</strong> {item.inProgress}</> : <><strong>{item.inProgress}</strong> {t("projects.inProgress")}</>}</span></div>
+    <footer><span className={item.overdue ? "v2-intern-projects-page__overdue" : undefined}>{item.overdue ? `${t("common.overdueDays", { count: item.overdue })}` : t("projects.noOverdue")}</span><span>{item.nextDue ? `${t("projects.nextDue")} ${formatInternDate(item.nextDue, locale)}` : t("projects.noUpcomingDue")}</span></footer>
   </V2Card>;
 }

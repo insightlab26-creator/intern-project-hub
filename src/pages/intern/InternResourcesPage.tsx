@@ -7,7 +7,7 @@ import { V2EmptyState } from "../../components/ui/V2EmptyState";
 import { V2Input } from "../../components/ui/V2Input";
 import { V2PageHeader } from "../../components/ui/V2PageHeader";
 import { V2Select } from "../../components/ui/V2Select";
-import { PROJECT_STATUS_LABELS } from "../../constants/domainLabels";
+import { formatInternDate, internProjectStatusLabel, useInternLocale } from "../../i18n/internLocale";
 import { getDocuments } from "../../services/documentService";
 import { getCurrentIntern } from "../../services/internService";
 import { getProjects } from "../../services/projectService";
@@ -22,9 +22,6 @@ const projectStatusVariant: Record<ProjectStatus, "neutral" | "success" | "warni
   PLANNING: "neutral", ACTIVE: "success", REVIEW: "info", REVISION: "warning", ON_HOLD: "warning", COMPLETED: "success", DROPPED: "danger", ARCHIVED: "neutral",
 };
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
-}
 
 function isSafeSourceUrl(value: string | null | undefined) {
   if (!value) return false;
@@ -49,6 +46,7 @@ function sortDocuments(documents: DocumentLink[], projects: Map<string, Project>
 }
 
 export default function InternResourcesPage() {
+  const { t } = useInternLocale();
   const [state, setState] = useState<PageState>("loading");
   const [data, setData] = useState<ResourceData | null>(null);
   const [query, setQuery] = useState("");
@@ -81,24 +79,26 @@ export default function InternResourcesPage() {
   }, [documents, projectById, projectId, query, taskById, type]);
   const summary = useMemo(() => ({ projects: data?.projects.length ?? 0, resources: documents.filter((document) => document.source === "RESOURCE").length, outputs: documents.filter((document) => document.source === "DOCUMENT").length }), [data, documents]);
 
-  if (state === "loading") return <V2Card><V2EmptyState title="Loading your resources" description="프로젝트 작업공간과 원본 링크를 불러오고 있습니다." /></V2Card>;
-  if (state === "profileMissing") return <V2Card><V2EmptyState title="Intern profile not linked" description="현재 로그인 계정에 연결된 인턴 프로필이 없습니다. ADMIN에게 연결을 요청해주세요." /></V2Card>;
-  if (state === "error" || !data) return <section className="v2-intern-resources"><V2PageHeader eyebrow="RESOURCES" title="My Resources" description="Project workspaces and source links for your assigned work." /><V2Card><V2EmptyState title="Unable to load your resources." description="잠시 후 다시 시도해주세요." action={<V2Button type="button" variant="secondary" onClick={() => void load()}>Retry</V2Button>} /></V2Card></section>;
+  if (state === "loading") return <V2Card><V2EmptyState title={t("state.loadingResources")} description={t("resources.description")} /></V2Card>;
+  if (state === "profileMissing") return <V2Card><V2EmptyState title={t("state.internMissing")} description={t("state.internMissingDescription")} /></V2Card>;
+  if (state === "error" || !data) return <section className="v2-intern-resources"><V2PageHeader eyebrow={t("resources.eyebrow")} title={t("resources.title")} description={t("resources.description")} /><V2Card><V2EmptyState title={t("resources.loadError")} description={t("tasks.adjust")} action={<V2Button type="button" variant="secondary" onClick={() => void load()}>{t("common.retry")}</V2Button>} /></V2Card></section>;
 
   const noResources = workspaceProjects.length === 0 && documents.length === 0;
   return <section className="v2-intern-resources">
-    <V2PageHeader eyebrow="RESOURCES" title="My Resources" description="Project workspaces and source links for your assigned work." />
-    <div className="v2-intern-resources__summary" aria-label="My resources summary"><Metric label="PROJECTS" value={summary.projects} /><Metric label="RESOURCES" value={summary.resources} /><Metric label="OUTPUTS" value={summary.outputs} /></div>
-    {noResources ? <V2Card className="v2-intern-resources__empty"><V2EmptyState title="No resources available yet." description="Resources will appear here when source links are added to your projects or assigned tasks." /></V2Card> : <>
-      {workspaceProjects.length > 0 && <section className="v2-intern-resources__workspaces"><header><p>PROJECT WORKSPACES</p><h2>Your connected project folders</h2></header><div>{workspaceProjects.map((project) => <V2Card key={project.id} className="v2-intern-resources__workspace"><div><Link to={`/intern/projects/${project.id}`}>{project.name}</Link><V2Badge variant={projectStatusVariant[project.status]}>{PROJECT_STATUS_LABELS[project.status]}</V2Badge></div><a className="v2-button v2-button--secondary" href={project.teamsFolderUrl!} target="_blank" rel="noopener noreferrer">Open Workspace ↗</a></V2Card>)}</div></section>}
-      <section className="v2-intern-resources__links"><header><p>SOURCE LINKS</p><h2>Documents &amp; outputs</h2></header>{documents.length === 0 ? <V2Card className="v2-intern-resources__empty"><V2EmptyState title="No source links available yet." description="Project and assigned-task source links will appear here." /></V2Card> : <><div className="v2-intern-resources__filters" aria-label="Resource filters"><V2Input aria-label="Search resources" placeholder="Search title, description, project, or task…" value={query} onChange={(event) => setQuery(event.target.value)} /><V2Select aria-label="Filter resources by project" value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="ALL">All projects</option>{projectOptions.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</V2Select><V2Select aria-label="Filter resource type" value={type} onChange={(event) => setType(event.target.value as TypeFilter)}><option value="ALL">All types</option><option value="DOCUMENT">Outputs</option><option value="RESOURCE">Resources</option></V2Select></div>{filteredDocuments.length === 0 ? <V2Card className="v2-intern-resources__empty"><V2EmptyState title="No source links match your filters." description="Try adjusting your search or filters." action={<V2Button type="button" variant="secondary" onClick={() => { setQuery(""); setProjectId("ALL"); setType("ALL"); }}>Clear filters</V2Button>} /></V2Card> : <div className="v2-intern-resources__list">{filteredDocuments.map((document) => <SourceLinkRow key={`${document.source}-${document.id}`} document={document} project={projectById.get(document.projectId)} task={document.taskId ? taskById.get(document.taskId) : undefined} />)}</div>}</>}</section>
+    <V2PageHeader eyebrow={t("resources.eyebrow")} title={t("resources.title")} description={t("resources.description")} />
+    <div className="v2-intern-resources__summary" aria-label={t("resources.summary")}><Metric label={t("common.project")} value={summary.projects} /><Metric label={t("resources.resources")} value={summary.resources} /><Metric label={t("resources.outputs")} value={summary.outputs} /></div>
+    {noResources ? <V2Card className="v2-intern-resources__empty"><V2EmptyState title={t("resources.none")} description={t("resources.noneDescription")} /></V2Card> : <>
+      {workspaceProjects.length > 0 && <section className="v2-intern-resources__workspaces"><header><p>{t("resources.workspaces")}</p><h2>{t("resources.connectedFolders")}</h2></header><div>{workspaceProjects.map((project) => <WorkspaceRow key={project.id} project={project} />)}</div></section>}
+      <section className="v2-intern-resources__links"><header><p>{t("resources.sourceLinks")}</p><h2>{t("resources.documentsOutputs")}</h2></header>{documents.length === 0 ? <V2Card className="v2-intern-resources__empty"><V2EmptyState title={t("resources.noLinks")} description={t("resources.noLinksDescription")} /></V2Card> : <><div className="v2-intern-resources__filters" aria-label={t("resources.eyebrow")}><V2Input aria-label={t("resources.search")} placeholder={t("resources.search")} value={query} onChange={(event) => setQuery(event.target.value)} /><V2Select aria-label={t("resources.filterProject")} value={projectId} onChange={(event) => setProjectId(event.target.value)}><option value="ALL">{t("resources.allProjects")}</option>{projectOptions.map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</V2Select><V2Select aria-label={t("resources.filterType")} value={type} onChange={(event) => setType(event.target.value as TypeFilter)}><option value="ALL">{t("resources.allTypes")}</option><option value="DOCUMENT">{t("resources.output")}</option><option value="RESOURCE">{t("resources.resource")}</option></V2Select></div>{filteredDocuments.length === 0 ? <V2Card className="v2-intern-resources__empty"><V2EmptyState title={t("resources.noMatch")} description={t("resources.adjust")} action={<V2Button type="button" variant="secondary" onClick={() => { setQuery(""); setProjectId("ALL"); setType("ALL"); }}>{t("common.clearFilters")}</V2Button>} /></V2Card> : <div className="v2-intern-resources__list">{filteredDocuments.map((document) => <SourceLinkRow key={`${document.source}-${document.id}`} document={document} project={projectById.get(document.projectId)} task={document.taskId ? taskById.get(document.taskId) : undefined} />)}</div>}</>}</section>
     </>}
   </section>;
 }
 
 function Metric({ label, value }: { label: string; value: number }) { return <V2Card className="v2-intern-resources__metric"><small>{label}</small><strong>{value}</strong></V2Card>; }
 
+function WorkspaceRow({ project }: { project: Project }) { const { locale, t } = useInternLocale(); return <V2Card className="v2-intern-resources__workspace"><div><Link to={`/intern/projects/${project.id}`}>{project.name}</Link><V2Badge variant={projectStatusVariant[project.status]}>{internProjectStatusLabel(project.status, locale)}</V2Badge></div><a className="v2-button v2-button--secondary" href={project.teamsFolderUrl!} target="_blank" rel="noopener noreferrer">{t("resources.openWorkspace")} ↗</a></V2Card>; }
 function SourceLinkRow({ document, project, task }: { document: DocumentLink; project: Project | undefined; task: Task | undefined }) {
+  const { locale, t } = useInternLocale();
   const hasUrl = isSafeSourceUrl(document.url);
-  return <article className="v2-intern-resources__row"><div className="v2-intern-resources__row-main"><header><V2Badge variant={document.source === "DOCUMENT" ? "info" : "neutral"}>{document.source === "DOCUMENT" ? "OUTPUT" : "RESOURCE"}</V2Badge><V2Badge variant={document.archived ? "neutral" : "success"}>{document.archived ? "ARCHIVED" : "ACTIVE"}</V2Badge></header><h3>{document.title}</h3>{document.description && <p>{document.description}</p>}</div><dl><div><dt>PROJECT</dt><dd>{project ? <Link to={`/intern/projects/${project.id}`}>{project.name}</Link> : "Project unavailable"}</dd></div><div><dt>LINKED TASK</dt><dd>{document.taskId ? task ? <Link to={`/intern/tasks/${task.id}`}>{task.title}</Link> : "Task unavailable" : "Project-level"}</dd></div><div><dt>UPDATED</dt><dd>{formatDate(document.updatedAt)}</dd></div></dl>{hasUrl ? <a className="v2-button v2-button--secondary" href={document.url} target="_blank" rel="noopener noreferrer">Open Source ↗</a> : <span className="v2-intern-resources__no-url">Source URL unavailable</span>}</article>;
+  return <article className="v2-intern-resources__row"><div className="v2-intern-resources__row-main"><header><V2Badge variant={document.source === "DOCUMENT" ? "info" : "neutral"}>{document.source === "DOCUMENT" ? t("resources.output") : t("resources.resource")}</V2Badge><V2Badge variant={document.archived ? "neutral" : "success"}>{document.archived ? t("resources.archived") : t("resources.active")}</V2Badge></header><h3>{document.title}</h3>{document.description && <p>{document.description}</p>}</div><dl><div><dt>{t("common.project")}</dt><dd>{project ? <Link to={`/intern/projects/${project.id}`}>{project.name}</Link> : t("common.projectUnavailable")}</dd></div><div><dt>{t("resources.linkedTask")}</dt><dd>{document.taskId ? task ? <Link to={`/intern/tasks/${task.id}`}>{task.title}</Link> : t("common.taskUnavailable") : t("resources.projectLevel")}</dd></div><div><dt>{t("common.updated")}</dt><dd>{formatInternDate(document.updatedAt, locale, true)}</dd></div></dl>{hasUrl ? <a className="v2-button v2-button--secondary" href={document.url} target="_blank" rel="noopener noreferrer">{t("resources.openSource")} ↗</a> : <span className="v2-intern-resources__no-url">{t("resources.noUrl")}</span>}</article>;
 }
