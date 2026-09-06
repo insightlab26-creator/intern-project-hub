@@ -9,6 +9,7 @@ vi.mock("../../pages/intern/InternTaskDetailPage", () => ({ default: () => <p>Ta
 vi.mock("../../pages/intern/InternProjectsPage", () => ({ default: () => <p>Projects destination</p> }));
 vi.mock("../../pages/intern/InternProjectDetailPage", () => ({ default: () => <p>Project detail destination</p> }));
 vi.mock("../../pages/intern/InternProgressPage", () => ({ default: () => <p>Progress destination</p> }));
+vi.mock("../../pages/intern/InternResourcesPage", () => ({ default: () => <p>Resources destination</p> }));
 
 describe("V2Router INTERN routes", () => {
   it("redirects the legacy My Quests route to the My Tasks screen", () => {
@@ -35,5 +36,10 @@ describe("V2Router INTERN routes", () => {
   it("renders the INTERN progress route", () => {
     render(<MemoryRouter initialEntries={["/intern/progress"]}><AuthContext.Provider value={{ profile: { id: "intern", email: null, display_name: "Intern", global_role: "INTERN", status: "ACTIVE" }, isLoading: false, signInCurrentUser: vi.fn(), signOutCurrentUser: vi.fn() }}><V2Router /></AuthContext.Provider></MemoryRouter>);
     expect(screen.getByText("Progress destination")).toBeInTheDocument();
+  });
+
+  it("renders the INTERN resources route", () => {
+    render(<MemoryRouter initialEntries={["/intern/resources"]}><AuthContext.Provider value={{ profile: { id: "intern", email: null, display_name: "Intern", global_role: "INTERN", status: "ACTIVE" }, isLoading: false, signInCurrentUser: vi.fn(), signOutCurrentUser: vi.fn() }}><V2Router /></AuthContext.Provider></MemoryRouter>);
+    expect(screen.getByText("Resources destination")).toBeInTheDocument();
   });
 });
