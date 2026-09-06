@@ -88,6 +88,16 @@ export async function getTaskUpdates(taskId: string): Promise<TaskUpdate[]> {
   return rows.map((row) => mapTaskUpdate(row, authorNames));
 }
 
+/** Home read for the signed-in INTERN; RLS remains the authorization boundary. */
+export async function getMyTaskUpdates(): Promise<TaskUpdate[]> {
+  const userId = await currentUserId();
+  const { data, error } = await supabase.from("task_updates").select(columns)
+    .eq("created_by", userId).order("occurred_on", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`내 진행 기록 조회 실패: ${error.message}`);
+  return ((data ?? []) as TaskUpdateRow[]).map((row) => mapTaskUpdate(row, new Map()));
+}
+
 /** Inbox read: one pending-update query plus one batched author lookup, never per Task. */
 export async function getPendingTaskUpdates(): Promise<TaskUpdate[]> {
   const { data, error } = await supabase.from("task_updates").select(columns)

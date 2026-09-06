@@ -64,4 +64,15 @@ describe("Task Update author labels", () => {
     expect(select).toHaveBeenCalledTimes(1); expect(from).toHaveBeenCalledTimes(1);
     expect(rpc).toHaveBeenCalledWith("get_task_update_author_labels", { p_update_ids: [update.id] });
   });
+
+  it("reads the signed-in intern's updates in one ordered query without a profile lookup", async () => {
+    const { eq, select } = mockUpdateQuery([update]);
+    getUser.mockResolvedValue({ data: { user: { id: "intern-profile-id" } }, error: null });
+    const { getMyTaskUpdates } = await import("./taskUpdateService");
+
+    await expect(getMyTaskUpdates()).resolves.toMatchObject([{ id: update.id, authorName: null }]);
+    expect(eq).toHaveBeenCalledWith("created_by", "intern-profile-id");
+    expect(select).toHaveBeenCalledTimes(1); expect(from).toHaveBeenCalledTimes(1);
+    expect(from).not.toHaveBeenCalledWith("profiles"); expect(rpc).not.toHaveBeenCalled();
+  });
 });
