@@ -23,10 +23,14 @@ import { RoleRouteGuard } from "./RoleRouteGuard";
 import V2LoginPage from "../../pages/common/V2LoginPage";
 import InternMyTasksPage from "../../pages/intern/InternMyTasksPage";
 import InternTaskDetailPage from "../../pages/intern/InternTaskDetailPage";
+import InternHomePage from "../../pages/intern/InternHomePage";
+import InternProjectsPage from "../../pages/intern/InternProjectsPage";
+import InternProjectDetailPage from "../../pages/intern/InternProjectDetailPage";
+import InternProgressPage from "../../pages/intern/InternProgressPage";
 
 const adminPages = ["documents"];
 const managerPages = ["home", "projects", "review-queue", "documents"];
-const internPages = ["home", "projects", "progress", "resources"];
+const internPages = ["projects", "progress", "resources"];
 
 function roleStart(role: AppRole): string {
   return role === "ADMIN" ? "/admin" : role === "MANAGER" ? "/manager" : role === "INTERN" ? "/intern" : "/unavailable";
@@ -48,7 +52,7 @@ export function V2Router() {
       <Route path="/manager" element={<ManagerLayout />}><Route index element={<Navigate to="home" replace />} />{managerPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="home" replace />} /></Route>
     </Route>
     <Route element={<RoleRouteGuard allowedRoles={["INTERN"]} />}>
-      <Route path="/intern" element={<InternLayout />}><Route index element={<Navigate to="home" replace />} /><Route path="tasks" element={<InternMyTasksPage />} /><Route path="tasks/:taskId" element={<InternTaskDetailPage />} /><Route path="my-quests" element={<Navigate to="/intern/tasks" replace />} />{internPages.map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="home" replace />} /></Route>
+      <Route path="/intern" element={<InternLayout />}><Route index element={<Navigate to="home" replace />} /><Route path="home" element={<InternHomePage />} /><Route path="tasks" element={<InternMyTasksPage />} /><Route path="tasks/:taskId" element={<InternTaskDetailPage />} /><Route path="projects" element={<InternProjectsPage />} /><Route path="projects/:projectId" element={<InternProjectDetailPage />} /><Route path="progress" element={<InternProgressPage />} /><Route path="my-quests" element={<Navigate to="/intern/tasks" replace />} />{internPages.filter((page) => page !== "projects" && page !== "progress").map((page) => <Route key={page} path={page} element={<PlaceholderPage />} />)}<Route path="*" element={<Navigate to="home" replace />} /></Route>
     </Route>
     <Route path="/unavailable" element={<PlaceholderPage title="Viewer 영역은 준비 중입니다." description="VIEWER 역할의 정보 구조와 권한 범위는 후속 단계에서 정의합니다." />} />
     <Route path="/v2/*" element={<LegacyV2Redirect />} />
