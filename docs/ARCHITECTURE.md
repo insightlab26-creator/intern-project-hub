@@ -176,7 +176,7 @@ Task write 함수는 security invoker여서 호출자의 RLS를 적용한다. �
 - 일반 데이터 테이블에는 기본적으로 물리 삭제 권한이 없음
 - task_assignees는 ADMIN이 담당자 교체를 위해 insert/delete 가능
 
-현재 앱은 ADMIN에게 전체 운영 메뉴를 표시하고 MANAGER에게 Dashboard, 담당 Projects, Work Packages, Calendar와 Documents만 표시한다. INTERN/VIEWER 권한은 추후 별도 권한표와 RLS로 확장한다.
+현재 앱은 ADMIN에게 전체 운영 메뉴를 표시하고 MANAGER에게 Dashboard, 담당 Projects, Work Packages, Calendar와 Documents만 표시한다. INTERN은 `/intern/home`, 본인 Tasks와 Task Detail만 사용하며 RLS는 본인 assigned Task, 해당 Project/Workstream 맥락 및 본인 Task Update로 범위를 제한한다. VIEWER 권한은 추후 확장한다.
 
 ## 7. Dashboard
 

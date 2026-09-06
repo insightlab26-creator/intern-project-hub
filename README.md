@@ -2,7 +2,7 @@
 
 인턴 프로그램과 참여자, 프로젝트, Workstream, Task, 담당자와 운영 이력을 관리하는 내부 웹 애플리케이션입니다. React/Vite 프런트엔드와 Supabase Auth/PostgreSQL을 사용합니다.
 
-현재 운영 데이터 범위는 ADMIN 전용입니다. INTERN과 VIEWER는 로그인할 수 있지만 운영 데이터 메뉴와 RLS 접근 권한이 아직 제공되지 않습니다. Users 화면은 기존 Auth 계정의 profile만 관리하며 계정 초대·비밀번호 초기화는 지원하지 않습니다.
+ADMIN은 전체 운영 데이터를 관리합니다. INTERN은 본인에게 배정된 Task와 해당 Project/Workstream 맥락, 본인이 작성한 Progress Update만 접근할 수 있으며 `/intern/home`에서 업무·검토·피드백을 확인합니다. VIEWER 범위는 아직 제공되지 않습니다.
 
 ## 실행 환경
 
