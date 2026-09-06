@@ -85,8 +85,7 @@ export default function InternMyTasksPage() {
   }, []);
 
   useEffect(() => {
-    const initialLoad = window.setTimeout(() => { void load(); }, 0);
-    return () => window.clearTimeout(initialLoad);
+    queueMicrotask(() => { void load(); });
   }, [load]);
 
   const projectsById = useMemo(() => new Map(data.projects.map((project) => [project.id, project])), [data.projects]);

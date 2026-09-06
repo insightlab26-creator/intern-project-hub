@@ -113,8 +113,7 @@ export default function InternProjectsPage() {
   }, []);
 
   useEffect(() => {
-    const initialLoad = window.setTimeout(() => { void load(); }, 0);
-    return () => window.clearTimeout(initialLoad);
+    queueMicrotask(() => { void load(); });
   }, [load]);
 
   const items = useMemo(() => buildProjectItems(projects, tasks, today), [projects, tasks, today]);

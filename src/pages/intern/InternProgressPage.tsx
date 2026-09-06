@@ -37,7 +37,7 @@ export default function InternProgressPage() {
       setData({ tasks, updates, projects, workstreams }); setState("ready");
     } catch { setState("error"); }
   }, []);
-  useEffect(() => { const timer = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timer); }, [load]);
+  useEffect(() => { queueMicrotask(() => { void load(); }); }, [load]);
   const items = useMemo(() => {
     const taskById = new Map((data?.tasks ?? []).map((task) => [task.id, task])); const projectById = new Map((data?.projects ?? []).map((project) => [project.id, project])); const workstreamById = new Map((data?.workstreams ?? []).map((workstream) => [workstream.id, workstream]));
     return (data?.updates ?? []).map((update) => { const task = taskById.get(update.taskId); const project = task ? projectById.get(task.projectId) : undefined; return task && project ? { update, task, project, workstream: workstreamById.get(task.workstreamId) } : null; }).filter((item): item is HistoryItem => item !== null).sort((left, right) => updateOrder(left.update, right.update));

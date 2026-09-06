@@ -64,10 +64,7 @@ export default function InternResourcesPage() {
     } catch { setState("error"); }
   }, []);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => { void load(); }, 0);
-    return () => window.clearTimeout(timer);
-  }, [load]);
+  useEffect(() => { queueMicrotask(() => { void load(); }); }, [load]);
 
   const projectById = useMemo(() => new Map((data?.projects ?? []).map((project) => [project.id, project])), [data]);
   const taskById = useMemo(() => new Map((data?.tasks ?? []).map((task) => [task.id, task])), [data]);

@@ -50,7 +50,7 @@ export default function InternProjectDetailPage() {
       setWorkspace({ project, tasks, workstreams, updates: updates.filter((update) => taskIds.has(update.taskId)) }); setState("ready");
     } catch { setState("error"); }
   }, [projectId]);
-  useEffect(() => { const timer = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timer); }, [load]);
+  useEffect(() => { queueMicrotask(() => { void load(); }); }, [load]);
   const groups = useMemo(() => groupTasks(workspace?.tasks ?? [], workspace?.workstreams ?? [], today), [workspace?.tasks, workspace?.workstreams, today]);
   const summary = useMemo(() => { const tasks = workspace?.tasks ?? []; return { assigned: tasks.length, done: tasks.filter((task) => task.status === "DONE").length, inProgress: tasks.filter((task) => task.status === "IN_PROGRESS").length, overdue: tasks.filter((task) => isOverdueTask(task, today)).length, nextDue: tasks.filter((task) => task.status !== "DONE" && task.dueDate).sort((left, right) => dueTime(left.dueDate) - dueTime(right.dueDate))[0]?.dueDate ?? null }; }, [today, workspace?.tasks]);
   const recentUpdates = useMemo(() => [...(workspace?.updates ?? [])].sort((left, right) => dueTime(right.occurredOn) - dueTime(left.occurredOn) || new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()).slice(0, 5), [workspace?.updates]);

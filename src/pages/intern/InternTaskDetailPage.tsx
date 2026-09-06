@@ -103,8 +103,7 @@ export default function InternTaskDetailPage() {
   }, [taskId]);
 
   useEffect(() => {
-    const initialLoad = window.setTimeout(() => { void load(); }, 0);
-    return () => window.clearTimeout(initialLoad);
+    queueMicrotask(() => { void load(); });
   }, [load]);
 
   const overdue = Boolean(context && isOverdueTask(context.task, today));
