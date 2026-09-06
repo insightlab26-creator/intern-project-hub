@@ -8,6 +8,8 @@ describe("InternLayout", () => {
   it("shows My Tasks and hides unsupported gamification navigation", () => {
     render(<MemoryRouter><AuthContext.Provider value={{ profile: { id: "intern", email: null, display_name: "Intern", global_role: "INTERN", status: "ACTIVE" }, isLoading: false, signInCurrentUser: async () => { throw new Error("not used"); }, signOutCurrentUser: async () => {} }}><InternLayout /></AuthContext.Provider></MemoryRouter>);
     expect(screen.getByRole("link", { name: "My Tasks" })).toHaveAttribute("href", "/intern/tasks");
+    expect(screen.getByRole("group", { name: "Change language" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Log out" })).toBeInTheDocument();
     expect(screen.queryByText("Achievements")).not.toBeInTheDocument();
     expect(screen.queryByText("Ranking")).not.toBeInTheDocument();
   });
