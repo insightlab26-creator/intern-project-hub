@@ -49,4 +49,21 @@ describe("AdminActivityPage", () => {
   it("distinguishes no records from no client-side search matches", async () => {
     const user = userEvent.setup(); renderPage(); await screen.findByRole("heading", { name: "Activity" }); await user.type(screen.getByLabelText("Search audit records"), "does-not-exist"); expect(screen.getByRole("heading", { name: "No matching audit records" })).toBeInTheDocument(); vi.mocked(getAuditLogPage).mockResolvedValue({ items: [], nextCursor: null }); await user.selectOptions(screen.getByLabelText("Filter audit records by action"), "DELETE"); expect(await screen.findByRole("heading", { name: "No audit records yet" })).toBeInTheDocument();
   });
+
+  it("paginates filtered activity rows in groups of ten and resets on search", async () => {
+    const manyEvents = Array.from({ length: 11 }, (_, index) => ({ ...first, id: 100 + index, entityId: `project-${index}`, actorName: `Actor ${index}` }));
+    vi.mocked(getAuditLogPage).mockResolvedValue({ items: manyEvents, nextCursor: null });
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByRole("heading", { name: "Activity" });
+
+    await waitFor(() => expect(document.querySelectorAll("tbody tr")).toHaveLength(10));
+    await user.click(screen.getByRole("button", { name: "2" }));
+    expect(document.querySelectorAll("tbody tr")).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "2" })).toHaveAttribute("aria-current", "page");
+
+    await user.type(screen.getByLabelText("Search audit records"), "Actor 0");
+    expect(document.querySelectorAll("tbody tr")).toHaveLength(1);
+    expect(screen.queryByRole("navigation", { name: "Activity pages" })).not.toBeInTheDocument();
+  });
 });

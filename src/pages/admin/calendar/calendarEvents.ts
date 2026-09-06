@@ -73,6 +73,6 @@ export function getMonthDays(current: Date): Date[] {
   });
 }
 
-export function formatCalendarDate(value: string): string {
-  return new Date(`${value}T00:00:00`).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
+export function formatCalendarDate(value: string, locale: "ko" | "en" = "en"): string {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US", { year: "numeric", month: "long", day: "numeric", weekday: "long" });
 }

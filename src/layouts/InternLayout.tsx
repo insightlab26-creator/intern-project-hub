@@ -1,11 +1,11 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../app/providers/authContext";
-import { InternLocaleProvider, useInternLocale } from "../i18n/internLocale";
+import { useInternLocale } from "../i18n/internLocale";
 
 const items = [["nav.home", "home"], ["nav.tasks", "tasks"], ["nav.projects", "projects"], ["nav.progress", "progress"], ["nav.resources", "resources"]] as const;
 
 export default function InternLayout() {
-  return <InternLocaleProvider><InternLayoutContent /></InternLocaleProvider>;
+  return <InternLayoutContent />;
 }
 
 function InternLayoutContent() {
