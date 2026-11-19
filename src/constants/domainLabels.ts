@@ -85,6 +85,7 @@ export const MEMBERSHIP_STATUS_LABELS: Record<MembershipStatus, string> = {
   ACTIVE: "활성", INACTIVE: "비활성",
 };
 export const TASK_UPDATE_REVIEW_STATUS_LABELS: Record<TaskUpdateReviewStatus, string> = {
+  NOT_REQUIRED: "피드백 기록",
   PENDING: "검토 대기", APPROVED: "승인", CHANGES_REQUESTED: "보완 요청",
 };
 export const MANAGER_NOTE_TYPE_LABELS:Record<ManagerNoteType,string>={GENERAL:"일반",FEEDBACK:"피드백",RISK:"위험",FOLLOW_UP:"후속 조치"};

@@ -15,6 +15,9 @@ type TaskRow = {
 
   title: string;
   description: string;
+  expected_output: string;
+  reviewer_id: string | null;
+  external_requester: string;
 
   status: TaskStatus;
   priority: TaskPriority;
@@ -50,6 +53,9 @@ const taskColumns = `
   parent_task_id,
   title,
   description,
+  expected_output,
+  reviewer_id,
+  external_requester,
   status,
   priority,
   start_date,
@@ -172,6 +178,9 @@ function mapTask(
 
     title: row.title,
     description: row.description,
+    expectedOutput: row.expected_output,
+    reviewerId: row.reviewer_id,
+    externalRequester: row.external_requester,
 
     workstreamId: row.workstream_id,
     parentTaskId: row.parent_task_id,
@@ -339,14 +348,18 @@ export async function createTask(
   input: CreateTaskInput
 ): Promise<Task> {
   const { data, error } = await supabase.rpc(
-    "create_task_with_assignees",
+    "save_task_with_workflow",
     {
+      p_task_id: null,
       p_project_id: input.projectId,
       p_workstream_id: input.workstreamId,
       p_parent_task_id: input.parentTaskId,
 
       p_title: input.title.trim(),
       p_description: input.description.trim(),
+      p_expected_output: input.expectedOutput ?? "",
+      p_reviewer_id: input.reviewerId ?? null,
+      p_external_requester: input.externalRequester ?? "",
 
       p_status: input.status,
       p_priority: input.priority,
@@ -382,7 +395,7 @@ export async function updateTask(
   input: UpdateTaskInput
 ): Promise<Task> {
   const { error } = await supabase.rpc(
-    "update_task_with_assignees",
+    "save_task_with_workflow",
     {
       p_task_id: input.taskId,
       p_project_id: input.projectId,
@@ -391,6 +404,9 @@ export async function updateTask(
 
       p_title: input.title.trim(),
       p_description: input.description.trim(),
+      p_expected_output: input.expectedOutput ?? "",
+      p_reviewer_id: input.reviewerId ?? null,
+      p_external_requester: input.externalRequester ?? "",
 
       p_status: input.status,
       p_priority: input.priority,

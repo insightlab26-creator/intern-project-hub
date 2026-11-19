@@ -60,8 +60,7 @@ export async function getTaskUpdates(taskId: string): Promise<TaskUpdate[]> {
   if (authorIds.length > 0) {
     const { data: profiles, error: profileError } = await supabase.from("profiles")
       .select("id, display_name").in("id", authorIds);
-    if (profileError) throw new Error(`작성자 조회 실패: ${profileError.message}`);
-    ((profiles ?? []) as ProfileRow[]).forEach((profile) => authorNames.set(profile.id, profile.display_name));
+    if (!profileError) ((profiles ?? []) as ProfileRow[]).forEach((profile) => authorNames.set(profile.id, profile.display_name));
   }
   return rows.map((row) => mapTaskUpdate(row, authorNames));
 }
@@ -89,4 +88,12 @@ export async function reviewTaskUpdate(input: ReviewTaskUpdateInput): Promise<vo
     updated_by: userId,
   }).eq("id", input.id);
   if (error) throw new Error(`진행 기록 검토 실패: ${error.message}`);
+}
+
+export async function saveTaskUpdateFeedback(id: string, feedback: string): Promise<void> {
+  const userId = await currentUserId();
+  const { error } = await supabase.from("task_updates").update({
+    manager_feedback: feedback.trim(), updated_by: userId,
+  }).eq("id", id);
+  if (error) throw new Error(`진행 기록 피드백 저장 실패: ${error.message}`);
 }

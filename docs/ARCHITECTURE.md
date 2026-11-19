@@ -1,5 +1,11 @@
 # Intern Project Hub 아키텍처
 
+## 최종 제출 흐름
+
+현재 실행 경로의 인턴 My Quests와 관리자·MANAGER Review Queue는 `TaskWorkflowPage`를 사용한다. `taskSubmissionService`가 업무 시작, 제출, 승인·수정 요청, 기존 REVIEW 전환 RPC를 호출한다. Task의 `expected_output`, `reviewer_id`, `external_requester`는 카드 정보다. `task_submissions`는 회차·판정·제출 당시의 Deliverable 버전을 보존하고 `task_submission_contributors`는 공동 기여자를 보존한다. 새 중간 기록은 `NOT_REQUIRED` 상태이며 관리자는 피드백만 기록한다.
+
+Task 배정 시 `project_members`가 없으면 트리거가 ACTIVE MEMBER를 생성한다. 기존 INACTIVE 멤버를 배정하면 저장이 거부되어 관리자가 참여 상태를 먼저 확인해야 한다. 두 후속 마이그레이션 `20260822000100_task_update_no_approval.sql`, `20260822000200_task_submission_workflow.sql`을 순서대로 적용해야 한다. 이전 SQL 파일의 ADMIN 중심 권한 설명은 당시 구현의 기록이다.
+
 ## 1. 실행 환경과 기술
 
 - Windows 11 호스트, VS Code, WSL Ubuntu

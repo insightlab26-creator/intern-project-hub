@@ -1,2 +1,13 @@
 @import "../styles/tokens.css";
 @import "../styles/globals.css";
+.v2-workflow-layout { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 1rem; align-items: start; }
+.v2-workflow-list, .v2-workflow-detail, .v2-workflow-form { display: grid; gap: 1rem; }
+.v2-workflow-task { display: grid; gap: .35rem; width: 100%; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+.v2-workflow-detail .v2-card { display: grid; gap: .75rem; }
+.v2-workflow-detail h2, .v2-workflow-detail h3, .v2-workflow-detail p { margin: 0; }
+.v2-workflow-form label, .v2-workflow-entry label { display: grid; gap: .35rem; }
+.v2-workflow-form textarea, .v2-workflow-entry textarea { width: 100%; min-height: 5rem; }
+.v2-workflow-form fieldset { display: flex; flex-wrap: wrap; gap: .75rem; }
+.v2-workflow-form fieldset label { display: flex; align-items: center; }
+.v2-workflow-entry { display: grid; gap: .5rem; padding: .9rem 0; border-top: 1px solid var(--v2-border, #ddd); }
+@media (max-width: 700px) { .v2-workflow-layout { grid-template-columns: 1fr; } }

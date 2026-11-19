@@ -8,7 +8,7 @@ import { V2EmptyState } from "../ui/V2EmptyState";
 
 type Props = { task: Task; project?: Project; interns: Map<string, Intern>; updates: TaskUpdate[] | undefined; loading: boolean; error: string; savingUpdate: boolean; editLoading: boolean; editError: string; onClose: () => void; onEditTask: () => void; onReviewUpdate: (id: string, status: "APPROVED" | "CHANGES_REQUESTED", feedback: string) => Promise<void> };
 const priorityVariant = { LOW: "neutral", MEDIUM: "warning", HIGH: "danger" } as const;
-const updateVariant = { PENDING: "warning", APPROVED: "success", CHANGES_REQUESTED: "danger" } as const;
+const updateVariant = { PENDING: "warning", APPROVED: "success", CHANGES_REQUESTED: "danger", NOT_REQUIRED: "neutral" } as const;
 const localToday = () => { const date = new Date(); return new Date(date.getFullYear(), date.getMonth(), date.getDate()); };
 const formatDate = (date: string | null) => date ? new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" }).format(new Date(`${date}T00:00:00`)) : "—";
 

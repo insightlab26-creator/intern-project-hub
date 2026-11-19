@@ -211,6 +211,9 @@ export type Task = {
 
   title: string;
   description: string;
+  expectedOutput: string;
+  reviewerId: string | null;
+  externalRequester: string;
 
   workstreamId: string;
   parentTaskId: string | null;
@@ -242,6 +245,9 @@ export type CreateTaskInput = {
 
   title: string;
   description: string;
+  expectedOutput?: string;
+  reviewerId?: string | null;
+  externalRequester?: string;
 
   workstreamId: string;
   parentTaskId: string | null;
@@ -267,6 +273,9 @@ export type UpdateTaskInput = {
 
   title: string;
   description: string;
+  expectedOutput?: string;
+  reviewerId?: string | null;
+  externalRequester?: string;
 
   workstreamId: string;
   parentTaskId: string | null;
@@ -294,7 +303,32 @@ export type TaskAssignee = {
   assignedBy: string | null;
 };
 
-export type TaskUpdateReviewStatus = "PENDING" | "APPROVED" | "CHANGES_REQUESTED";
+export type TaskUpdateReviewStatus = "PENDING" | "APPROVED" | "CHANGES_REQUESTED" | "NOT_REQUIRED";
+
+export type TaskSubmission = {
+  id: string;
+  taskId: string;
+  revision: number;
+  versionNumber: number;
+  title: string;
+  url: string;
+  note: string;
+  submittedBy: string;
+  submittedAt: string;
+  contributorInternIds: string[];
+  decision: "PENDING" | "APPROVED" | "CHANGES_REQUESTED";
+  feedback: string;
+  decidedBy: string | null;
+  decidedAt: string | null;
+};
+
+export type LegacyTaskResolution = {
+  taskId: string;
+  action: "RESUBMIT" | "COMPLETE";
+  reason: string;
+  resolvedBy: string;
+  resolvedAt: string;
+};
 
 export type TaskUpdate = {
   id: string;
